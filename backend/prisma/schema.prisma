@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String
+  firstName     String
+  lastName      String
+  phoneNumber   String?
+  role          Role      @default(CUSTOMER)
+  accounts      Account[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  stripeId            String?   // Stripe customer ID
+  resetPasswordToken  String?
+  resetPasswordExpires DateTime?
+  verificationCode    String?
+  otpPurpose          OtpPurpose?
+  otpExpire           DateTime?
+  failedLoginAttempts Int         @default(0)
+  lockedUntil         DateTime?
+  refreshToken        String?
+}
+
+enum OtpPurpose {
+  SIGN_UP
+  LOGIN
+  RESET_PASSWORD
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+model Account {
+  id            String        @id @default(uuid())
+  accountNumber String        @unique
+  balance       Float         @default(0.0)
+  currency      String        @default("USD")
+  type          AccountType   @default(CHECKING)
+  userId        String
+  user          User          @relation(fields: [userId], references: [id])
+  transactions  Transaction[] @relation("AccountTransactions")
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+enum AccountType {
+  CHECKING
+  SAVINGS
+}
+
+model Transaction {
+  id              String            @id @default(uuid())
+  amount          Float
+  type            TransactionType
+  status          TransactionStatus @default(PENDING)
+  accountId       String
+  account         Account           @relation("AccountTransactions", fields: [accountId], references: [id])
+  referenceId     String?
+  description     String?
+  createdAt       DateTime          @default(now())
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  TRANSFER
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}

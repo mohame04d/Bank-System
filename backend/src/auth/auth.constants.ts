@@ -1,0 +1,8 @@
+export const AUTH_CONSTANTS = {
+  BCRYPT_SALT_ROUNDS: 10,
+  OTP_EXPIRY_MS: 15 * 60 * 1000, // 15 minutes
+  RESET_TOKEN_EXPIRY_MS: 60 * 60 * 1000, // 1 hour
+  ACCESS_TOKEN_EXPIRY: '15m' as any,
+  REFRESH_TOKEN_EXPIRY: '7d' as any,
+  REFRESH_TOKEN_MAX_USES: 10,
+};
