@@ -9,20 +9,29 @@ import {
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { CreditCard, ShieldCheck } from 'lucide-react';
+import { ConfirmModal } from '../components/ui/ConfirmModal';
+import { CreditCard, ShieldCheck, Zap, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../store/useAuthStore';
 import api from '../services/api';
+import { useTranslation } from 'react-i18next';
 
-// Replace with your actual Stripe publishable key
-const stripePromise = loadStripe('pk_test_TYooMQauvdEDq54NiTphI7jx');
+// Use environment variable for Stripe publishable key, fallback to test key if not provided
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_TYooMQauvdEDq54NiTphI7jx');
 
 const CheckoutForm = () => {
   const stripe = useStripe();
   const elements = useElements();
   const [amount, setAmount] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { t } = useTranslation();
+  
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    amount?: string;
+    isQuick?: boolean;
+  }>({ isOpen: false });
 
   const queryClient = useQueryClient();
   const user = useAuthStore((state) => state.user);
@@ -34,13 +43,35 @@ const CheckoutForm = () => {
       return;
     }
 
+    setConfirmModal({ isOpen: true, amount, isQuick: false });
+  };
+
+  const executeDeposit = async () => {
     setIsLoading(true);
+    const depositAmount = confirmModal.amount!;
+    setConfirmModal({ isOpen: false });
 
     try {
       // 1. Fetch client_secret from backend
-      const response = await api.post('/stripe/create-payment-intent', { amount: Number(amount) });
+      const response = await api.post('/stripe/create-payment-intent', { amount: Number(depositAmount) });
       const { clientSecret } = response.data;
       
+      // Local Test Bypass
+      if (clientSecret === 'mock_client_secret_for_local_testing') {
+        await api.post('/stripe/confirm-test-deposit', { amount: Number(depositAmount) });
+        toast.success(t('deposit.successMessage', { amount: depositAmount }) + ' ' + t('deposit.testMode'));
+        if (!confirmModal.isQuick) {
+          setAmount('');
+          elements.getElement(CardElement)?.clear();
+        }
+        setTimeout(() => {
+          queryClient.invalidateQueries({ queryKey: ['accounts'] });
+          queryClient.invalidateQueries({ queryKey: ['history'] });
+        }, 500);
+        setIsLoading(false);
+        return;
+      }
+
       // 2. Confirm the card payment
       const result = await stripe.confirmCardPayment(clientSecret, {
         payment_method: {
@@ -53,9 +84,12 @@ const CheckoutForm = () => {
       });
 
       if (result.error) {
-        toast.error(result.error.message || 'Payment failed');
+        toast.error(result.error.message || t('deposit.failedMessage'));
       } else {
-        toast.success(`Successfully deposited $${amount}!`);
+        // For local testing: update balance immediately
+        await api.post('/stripe/confirm-test-deposit', { amount: Number(depositAmount) });
+        
+        toast.success(t('deposit.successMessage', { amount: depositAmount }));
         setAmount('');
         elements.getElement(CardElement)?.clear();
         
@@ -66,8 +100,10 @@ const CheckoutForm = () => {
         }, 2000);
       }
     } catch (error: any) {
-      console.error(error);
-      toast.error(error.response?.data?.message || 'An error occurred during payment');
+      console.error('Payment Error:', error);
+      const errorMsg = error.response?.data?.message;
+      const displayMsg = Array.isArray(errorMsg) ? errorMsg[0] : errorMsg;
+      toast.error(displayMsg || error.message || t('deposit.failedMessage'));
     } finally {
       setIsLoading(false);
     }
@@ -92,42 +128,80 @@ const CheckoutForm = () => {
     },
   };
 
+  const handleQuickDeposit = async () => {
+    setConfirmModal({ isOpen: true, amount: '100', isQuick: true });
+  };
+
+  const copyTestCard = () => {
+    navigator.clipboard.writeText('4242424242424242');
+    toast.success(t('deposit.copied'));
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 mt-6">
+    <div className="space-y-6 mt-6">
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={t('deposit.confirmModalTitle')}
+        message={t('deposit.confirmModalMessage', { amount: confirmModal.amount })}
+        onConfirm={executeDeposit}
+        onCancel={() => setConfirmModal({ isOpen: false })}
+      />
+      
+      <div className="flex gap-2">
+        <Button type="button" variant="outline" className="flex-1 gap-2 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10" onClick={handleQuickDeposit} disabled={isLoading}>
+          <Zap size={16} /> {t('deposit.quick100')}
+        </Button>
+        <Button type="button" variant="outline" className="flex-1 gap-2" onClick={copyTestCard} disabled={isLoading}>
+          <Copy size={16} /> {t('deposit.copyTestCard')}
+        </Button>
+      </div>
+      
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t border-slate-700" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-slate-800 px-2 text-slate-400">Or use manual deposit</span>
+        </div>
+      </div>
+
+    <form onSubmit={handleSubmit} className="space-y-6">
       <Input
-        label="Deposit Amount (USD)"
+        label={t('deposit.amount')}
         type="number"
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
-        placeholder="100.00"
+        placeholder={t('deposit.amountPlaceholder')}
         required
         min="10"
       />
       
       <div className="space-y-1.5">
-        <label className="text-sm font-medium text-slate-300">Card Details</label>
+        <label className="text-sm font-medium text-slate-300">{t('deposit.cardDetails')}</label>
         <div className="p-4 rounded-lg border border-slate-700 bg-slate-800/50">
           <CardElement options={cardElementOptions} />
         </div>
       </div>
 
       <Button type="submit" className="w-full" isLoading={isLoading} disabled={!stripe}>
-        Pay Securely
+        {isLoading ? t('deposit.processing') : t('deposit.depositNow')}
       </Button>
 
       <p className="flex items-center justify-center gap-2 text-xs text-slate-400 mt-4">
         <ShieldCheck size={16} className="text-emerald-500" /> Payments are secure and encrypted
       </p>
     </form>
+    </div>
   );
 };
 
 export function Deposit() {
+  const { t } = useTranslation();
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-100">Deposit Funds</h1>
-        <p className="text-slate-400">Add money to your NeonBank account using a credit or debit card.</p>
+        <h1 className="text-2xl font-bold text-slate-100">{t('deposit.title')}</h1>
+        <p className="text-slate-400">{t('deposit.subtitle')}</p>
       </div>
 
       <Card>

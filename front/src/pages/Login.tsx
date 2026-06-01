@@ -11,6 +11,7 @@ import { useAuthStore } from '../store/useAuthStore';
 import { Wallet } from 'lucide-react';
 import api from '../services/api';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -23,6 +24,7 @@ export function Login() {
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.setAuth);
   const [isLoading, setIsLoading] = useState(false);
+  const { t } = useTranslation();
 
   const { register, handleSubmit, formState: { errors } } = useHookForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -64,22 +66,22 @@ export function Login() {
           <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-white mb-4 shadow-lg shadow-primary/20">
             <Wallet size={24} />
           </div>
-          <h1 className="text-2xl font-bold text-slate-100">Welcome Back</h1>
-          <p className="text-slate-400 text-sm mt-1">Sign in to your NeonBank account</p>
+          <h1 className="text-2xl font-bold text-slate-100">{t('auth.loginTitle')}</h1>
+          <p className="text-slate-400 text-sm mt-1">{t('auth.loginSubtitle')}</p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="relative z-10 space-y-4">
           <Input
-            label="Email Address"
+            label={t('auth.email')}
             type="email"
-            placeholder="john@example.com"
+            placeholder={t('auth.emailPlaceholder')}
             {...register('email')}
             error={errors.email?.message}
           />
           <Input
-            label="Password"
+            label={t('auth.password')}
             type="password"
-            placeholder="••••••••"
+            placeholder={t('auth.passwordPlaceholder')}
             {...register('password')}
             error={errors.password?.message}
           />
@@ -90,20 +92,19 @@ export function Login() {
               Remember me
             </label>
             <Link to="/forgot-password" className="text-sm text-primary hover:text-primary-dark transition-colors">
-              Forgot password?
+              {t('auth.forgotPassword')}
             </Link>
           </div>
 
           <Button type="submit" className="w-full mt-6" isLoading={isLoading}>
-            Sign In
+            {t('auth.loginButton')}
           </Button>
         </form>
 
         <p className="mt-6 text-center text-sm text-slate-400 relative z-10">
-          Don't have an account?{' '}
-          <a href="/register" className="text-primary hover:text-primary-dark transition-colors font-medium">
-            Create account
-          </a>
+          {t('auth.noAccount')} <Link to="/register" className="text-primary hover:text-primary-dark transition-colors font-medium">
+            {t('auth.registerButton')}
+          </Link>
         </p>
       </Card>
     </div>

@@ -25,11 +25,11 @@ export class UsersService {
     });
   }
 
-  async updateProfile(userId: string, data: { firstName?: string; lastName?: string; phoneNumber?: string }) {
+  async updateProfile(userId: string, data: { firstName?: string; lastName?: string; phoneNumber?: string; avatar?: string }) {
     return this.prisma.user.update({
       where: { id: userId },
       data,
-      select: { id: true, email: true, firstName: true, lastName: true, phoneNumber: true, role: true }
+      select: { id: true, email: true, firstName: true, lastName: true, phoneNumber: true, role: true, avatar: true }
     });
   }
 
@@ -41,6 +41,8 @@ export class UsersService {
         firstName: true,
         lastName: true,
         role: true,
+        status: true,
+        avatar: true,
         createdAt: true,
         accounts: {
           select: {
@@ -50,6 +52,34 @@ export class UsersService {
         }
       },
       orderBy: { createdAt: 'desc' }
+    });
+  }
+
+  async deleteUser(id: string) {
+    return this.prisma.user.delete({
+      where: { id }
+    });
+  }
+
+  async updateUserRole(id: string, role: 'ADMIN' | 'CUSTOMER') {
+    return this.prisma.user.update({
+      where: { id },
+      data: { role },
+      select: { id: true, email: true, role: true }
+    });
+  }
+
+  async updateUserStatus(id: string, status: 'ACTIVE' | 'FROZEN') {
+    // If frozen, we also revoke all active sessions by nullifying refreshToken
+    const data: any = { status };
+    if (status === 'FROZEN') {
+      data.refreshToken = null;
+    }
+    
+    return this.prisma.user.update({
+      where: { id },
+      data,
+      select: { id: true, email: true, status: true }
     });
   }
 }

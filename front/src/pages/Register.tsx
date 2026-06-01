@@ -10,6 +10,7 @@ import { useAuthStore } from '../store/useAuthStore';
 import { Wallet } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '../services/api';
+import { useTranslation } from 'react-i18next';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -26,6 +27,7 @@ type RegisterForm = z.infer<typeof registerSchema>;
 export function Register() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const { t } = useTranslation();
 
   const { register, handleSubmit, formState: { errors } } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
@@ -67,50 +69,49 @@ export function Register() {
           <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-white mb-4 shadow-lg shadow-primary/20">
             <Wallet size={24} />
           </div>
-          <h1 className="text-2xl font-bold text-slate-100">Create Account</h1>
-          <p className="text-slate-400 text-sm mt-1">Join NeonBank today</p>
+          <h1 className="text-2xl font-bold text-slate-100">{t('auth.registerTitle')}</h1>
+          <p className="text-slate-400 text-sm mt-1">{t('auth.registerSubtitle')}</p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="relative z-10 space-y-4">
           <Input
-            label="Full Name"
+            label={t('auth.name')}
             type="text"
-            placeholder="John Doe"
+            placeholder={t('auth.namePlaceholder')}
             {...register('name')}
             error={errors.name?.message}
           />
           <Input
-            label="Email Address"
+            label={t('auth.email')}
             type="email"
-            placeholder="john@example.com"
+            placeholder={t('auth.emailPlaceholder')}
             {...register('email')}
             error={errors.email?.message}
           />
           <Input
-            label="Password"
+            label={t('auth.password')}
             type="password"
-            placeholder="••••••••"
+            placeholder={t('auth.passwordPlaceholder')}
             {...register('password')}
             error={errors.password?.message}
           />
           <Input
-            label="Confirm Password"
+            label={t('profile.confirmPassword')}
             type="password"
-            placeholder="••••••••"
+            placeholder={t('auth.passwordPlaceholder')}
             {...register('confirmPassword')}
             error={errors.confirmPassword?.message}
           />
 
           <Button type="submit" className="w-full mt-6" isLoading={isLoading}>
-            Sign Up
+            {t('auth.registerButton')}
           </Button>
         </form>
 
         <p className="mt-6 text-center text-sm text-slate-400 relative z-10">
-          Already have an account?{' '}
-          <a href="/login" className="text-primary hover:text-primary-dark transition-colors font-medium">
-            Sign in
-          </a>
+          {t('auth.haveAccount')} <Link to="/login" className="text-primary hover:text-primary-dark transition-colors font-medium">
+            {t('auth.loginButton')}
+          </Link>
         </p>
       </Card>
     </div>

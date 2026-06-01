@@ -5,6 +5,7 @@ import { Input } from '../components/ui/Input';
 import { Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '../services/api';
+import { useTranslation } from 'react-i18next';
 
 export function ResetPassword() {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ export function ResetPassword() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { t } = useTranslation();
 
   const { email, resetToken } = location.state || {};
 
@@ -49,26 +51,26 @@ export function ResetPassword() {
           <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4">
             <Lock className="w-6 h-6 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-100">Set New Password</h1>
+          <h1 className="text-2xl font-bold text-slate-100">{t('auth.resetPasswordTitle')}</h1>
           <p className="text-slate-400 text-sm mt-2 text-center">
-            Enter your new password below.
+            {t('auth.resetPasswordSubtitle')}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
             <Input
-              label="New Password"
+              label={t('auth.password')}
               type="password"
-              placeholder="••••••••"
+              placeholder={t('auth.passwordPlaceholder')}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
             <Input
-              label="Confirm Password"
+              label={t('profile.confirmPassword')}
               type="password"
-              placeholder="••••••••"
+              placeholder={t('auth.passwordPlaceholder')}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
@@ -80,7 +82,7 @@ export function ResetPassword() {
             disabled={isLoading}
             className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-2.5 rounded-lg transition-colors disabled:opacity-50"
           >
-            {isLoading ? 'Resetting...' : 'Reset Password'}
+            {isLoading ? t('auth.loading') : t('auth.resetPasswordTitle')}
           </button>
         </form>
       </Card>

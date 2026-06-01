@@ -5,10 +5,12 @@ import api from '../services/api';
 import { formatCurrency } from '../utils/format';
 import { Landmark, Plus, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 export function Accounts() {
   const queryClient = useQueryClient();
   const [isCreating, setIsCreating] = useState(false);
+  const { t } = useTranslation();
 
   const { data: accounts = [], isLoading } = useQuery({
     queryKey: ['accounts'],
@@ -43,8 +45,8 @@ export function Accounts() {
     <div className="space-y-6 max-w-5xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-100">My Accounts</h1>
-          <p className="text-slate-400">Manage your checking and savings accounts</p>
+          <h1 className="text-2xl font-bold text-slate-100">{t('accounts.title')}</h1>
+          <p className="text-slate-400">{t('accounts.subtitle')}</p>
         </div>
         <button
           onClick={handleCreateAccount}
@@ -57,7 +59,7 @@ export function Accounts() {
       </div>
 
       {isLoading ? (
-        <div className="text-center py-12 text-slate-400">Loading accounts...</div>
+        <div className="text-center py-12 text-slate-400">{t('accounts.loading')}</div>
       ) : accounts.length === 0 ? (
         <div className="text-center py-12 text-slate-400">No accounts found.</div>
       ) : (
@@ -77,7 +79,7 @@ export function Accounts() {
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-slate-200 capitalize">
-                      {account.type.toLowerCase()} Account
+                      {account.type === 'CHECKING' ? t('accounts.checking') : t('accounts.savings')}
                     </h3>
                     <p className="text-sm text-slate-400 font-mono">
                       **** {account.accountNumber.slice(-4)}
@@ -85,12 +87,12 @@ export function Accounts() {
                   </div>
                 </div>
                 <div className="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400">
-                  Active
+                  {t('accounts.active')}
                 </div>
               </div>
 
               <div>
-                <p className="text-sm text-slate-400 mb-1">Available Balance</p>
+                <p className="text-sm text-slate-400 mb-1">{t('accounts.balance')}</p>
                 <div className="text-3xl font-bold text-slate-100">
                   {formatCurrency(account.balance)}
                 </div>

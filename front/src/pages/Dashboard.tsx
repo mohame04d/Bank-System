@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { formatCurrency } from '../utils/format';
 import { ArrowUpRight, ArrowDownRight, CreditCard, Send, Plus } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../services/api';
 import { useAuthStore } from '../store/useAuthStore';
 import { Link } from 'react-router-dom';
+import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 const recentTransactions = [
   { id: '1', name: 'Netflix Subscription', type: 'expense', amount: 15.99, date: 'Today, 2:45 PM', category: 'Entertainment' },
@@ -17,6 +19,7 @@ const recentTransactions = [
 
 export function Dashboard() {
   const user = useAuthStore((state) => state.user);
+  const { t } = useTranslation();
 
   const { data: accounts, isLoading: accountsLoading } = useQuery({
     queryKey: ['accounts'],
@@ -34,25 +37,91 @@ export function Dashboard() {
     },
   });
 
-  const mainAccount = accounts?.[0] || { balance: 0 };
+  const totalBalance = accounts?.reduce((sum: number, acc: any) => sum + Number(acc.balance), 0) || 0;
+  
+  const totalIncome = history?.reduce((sum: number, tx: any) => {
+    const isLegacyOutgoing = tx.type === 'TRANSFER' && tx.amount > 0 && tx.description?.startsWith('Transfer to');
+    if (tx.type === 'DEPOSIT' || (tx.type === 'TRANSFER' && tx.amount > 0 && !isLegacyOutgoing)) {
+      return sum + Number(tx.amount);
+    }
+    return sum;
+  }, 0) || 0;
+
+  const totalExpense = history?.reduce((sum: number, tx: any) => {
+    const isLegacyOutgoing = tx.type === 'TRANSFER' && tx.amount > 0 && tx.description?.startsWith('Transfer to');
+    if (tx.type === 'WITHDRAWAL' || (tx.type === 'TRANSFER' && tx.amount < 0) || isLegacyOutgoing) {
+      return sum + Math.abs(Number(tx.amount));
+    }
+    return sum;
+  }, 0) || 0;
+
   const recentTransactions = history?.slice(0, 4) || [];
+
+  // Quick Transfer Logic
+  const queryClient = useQueryClient();
+  const [quickAmount, setQuickAmount] = useState('');
+  const [selectedContact, setSelectedContact] = useState<string | null>(null);
+  const [isTransferring, setIsTransferring] = useState(false);
+
+  // Extract recently transferred accounts from referenceId
+  const recentContacts = Array.from(new Set(
+    (history || [])
+      .filter((tx: any) => tx.type === 'TRANSFER' && tx.amount < 0 && tx.referenceId && tx.referenceId.length >= 10)
+      .map((tx: any) => tx.referenceId)
+  )).slice(0, 4) as string[];
+
+  // Fallback contacts if user has no history
+  const contactsToDisplay = recentContacts.length > 0 ? recentContacts : ['1111111111', '2222222222', '3333333333', '4444444444'];
+
+  const handleQuickTransfer = async () => {
+    if (!selectedContact) return toast.error('Please select a contact first');
+    if (!quickAmount || Number(quickAmount) <= 0) return toast.error('Enter a valid amount');
+    if (!accounts || accounts.length === 0) return toast.error('No account available');
+
+    const amountNum = Number(quickAmount);
+    
+    // Find an account that has enough balance, prefer CHECKING
+    let sourceAccount = accounts.find((acc: any) => acc.type === 'CHECKING' && Number(acc.balance) >= amountNum);
+    if (!sourceAccount) {
+      sourceAccount = accounts.find((acc: any) => Number(acc.balance) >= amountNum) || accounts[0];
+    }
+
+    setIsTransferring(true);
+    try {
+      await api.post('/transactions/transfer', {
+        fromAccountId: sourceAccount.id,
+        toAccountNumber: selectedContact,
+        amount: amountNum,
+        description: `Transfer to ${selectedContact}`,
+      });
+      toast.success(`Successfully sent $${quickAmount} to ${selectedContact}`);
+      setQuickAmount('');
+      setSelectedContact(null);
+      queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      queryClient.invalidateQueries({ queryKey: ['history'] });
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Transfer failed');
+    } finally {
+      setIsTransferring(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-100">Dashboard</h1>
-          <p className="text-slate-400">Welcome back {user?.name}, here's your financial overview.</p>
+          <h1 className="text-2xl font-bold text-slate-100">{t('dashboard.title')}</h1>
+          <p className="text-slate-400">{t('dashboard.welcome', { name: user?.name })}</p>
         </div>
         <div className="flex gap-3">
           <Link to="/deposit">
             <Button variant="outline" className="gap-2">
-              <Plus size={16} /> Add Money
+              <Plus size={16} /> {t('dashboard.addMoney')}
             </Button>
           </Link>
           <Link to="/transfer">
             <Button className="gap-2">
-              <Send size={16} /> Send
+              <Send size={16} /> {t('dashboard.send')}
             </Button>
           </Link>
         </div>
@@ -64,24 +133,24 @@ export function Dashboard() {
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
           <div className="relative z-10 flex flex-col h-full justify-between">
             <div>
-              <p className="text-blue-100 font-medium mb-1">Total Balance</p>
+              <p className="text-blue-100 font-medium mb-1">{t('dashboard.totalBalance')}</p>
               <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight">
-                {accountsLoading ? '...' : formatCurrency(mainAccount.balance)}
+                {accountsLoading ? '...' : formatCurrency(totalBalance)}
               </h2>
             </div>
             
             <div className="flex gap-8 mt-8">
               <div>
                 <p className="text-blue-200 text-sm mb-1 flex items-center gap-1">
-                  <ArrowDownRight size={16} className="text-emerald-400" /> Income
+                  <ArrowDownRight size={16} className="text-emerald-400" /> {t('dashboard.income')}
                 </p>
-                <p className="text-xl font-semibold text-white">{formatCurrency(4250.00)}</p>
+                <p className="text-xl font-semibold text-white">{formatCurrency(totalIncome)}</p>
               </div>
               <div>
                 <p className="text-blue-200 text-sm mb-1 flex items-center gap-1">
-                  <ArrowUpRight size={16} className="text-rose-400" /> Expense
+                  <ArrowUpRight size={16} className="text-rose-400" /> {t('dashboard.expense')}
                 </p>
-                <p className="text-xl font-semibold text-white">{formatCurrency(1840.25)}</p>
+                <p className="text-xl font-semibold text-white">{formatCurrency(totalExpense)}</p>
               </div>
             </div>
           </div>
@@ -116,8 +185,8 @@ export function Dashboard() {
         {/* Recent Transactions */}
         <Card className="lg:col-span-2">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-lg font-semibold text-slate-100">Recent Transactions</h3>
-            <Button variant="ghost" size="sm">View All</Button>
+            <h3 className="text-lg font-semibold text-slate-100">{t('dashboard.recentTransactions')}</h3>
+            <Button variant="ghost" size="sm">{t('dashboard.viewAll')}</Button>
           </div>
           
           <div className="space-y-4">
@@ -126,38 +195,51 @@ export function Dashboard() {
             ) : recentTransactions.length === 0 ? (
               <p className="text-slate-400 p-3">No recent transactions.</p>
             ) : (
-              recentTransactions.map((tx: any) => (
-                <div key={tx.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-800/50 transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      tx.type === 'DEPOSIT' || tx.amount > 0 && tx.type !== 'TRANSFER' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'
-                    }`}>
-                      {tx.type === 'DEPOSIT' ? <ArrowDownRight size={20} /> : <ArrowUpRight size={20} />}
+              recentTransactions.map((tx: any) => {
+                const isLegacyOutgoing = tx.type === 'TRANSFER' && tx.amount > 0 && tx.description?.startsWith('Transfer to');
+                const isIncoming = tx.type === 'DEPOSIT' || (tx.type === 'TRANSFER' && tx.amount > 0 && !isLegacyOutgoing);
+
+                return (
+                  <div key={tx.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-800/50 transition-colors">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                        isIncoming ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'
+                      }`}>
+                        {isIncoming ? <ArrowDownRight size={20} /> : <ArrowUpRight size={20} />}
+                      </div>
+                      <div>
+                        <p className="font-medium text-slate-200">{tx.description || tx.type}</p>
+                        <p className="text-xs text-slate-400">{new Date(tx.createdAt).toLocaleDateString()}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium text-slate-200">{tx.description || tx.type}</p>
-                      <p className="text-xs text-slate-400">{new Date(tx.createdAt).toLocaleDateString()}</p>
+                    <div className={`font-semibold ${isIncoming ? 'text-emerald-400' : 'text-slate-200'}`}>
+                      {isIncoming ? '+' : '-'}{formatCurrency(Math.abs(tx.amount))}
                     </div>
                   </div>
-                  <div className={`font-semibold ${tx.type === 'DEPOSIT' ? 'text-emerald-400' : 'text-slate-200'}`}>
-                    {tx.type === 'DEPOSIT' ? '+' : '-'}{formatCurrency(tx.amount)}
-                  </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </Card>
 
         {/* Quick Send */}
         <Card>
-          <h3 className="text-lg font-semibold text-slate-100 mb-6">Quick Transfer</h3>
+          <h3 className="text-lg font-semibold text-slate-100 mb-6">{t('dashboard.quickTransfer')}</h3>
           <div className="flex justify-between mb-6">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="flex flex-col items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
-                <div className="w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center">
-                  <span className="text-slate-300">U{i}</span>
+            {contactsToDisplay.map((contact, idx) => (
+              <div 
+                key={idx} 
+                onClick={() => setSelectedContact(contact)}
+                className={`flex flex-col items-center gap-2 cursor-pointer transition-all ${selectedContact === contact ? 'scale-110' : 'hover:opacity-80'}`}
+              >
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 ${selectedContact === contact ? 'border-primary bg-primary/20' : 'border-transparent bg-slate-700'}`}>
+                  <span className={selectedContact === contact ? 'text-primary font-bold' : 'text-slate-300'}>
+                    U{idx + 1}
+                  </span>
                 </div>
-                <span className="text-xs text-slate-400">User {i}</span>
+                <span className={`text-xs ${selectedContact === contact ? 'text-primary font-medium' : 'text-slate-400'}`}>
+                  ..{contact.slice(-4)}
+                </span>
               </div>
             ))}
           </div>
@@ -165,9 +247,20 @@ export function Dashboard() {
           <div className="space-y-4 border-t border-slate-700/50 pt-6">
             <div className="flex items-center bg-slate-800/50 rounded-lg p-2 border border-slate-700">
               <span className="text-slate-400 px-3">$</span>
-              <input type="number" placeholder="0.00" className="bg-transparent border-none focus:outline-none text-white w-full font-medium" />
-              <Button size="sm" className="ml-2">Send</Button>
+              <input 
+                type="number" 
+                value={quickAmount}
+                onChange={(e) => setQuickAmount(e.target.value)}
+                placeholder="0.00" 
+                className="bg-transparent border-none focus:outline-none text-white w-full font-medium" 
+              />
+              <Button size="sm" className="ml-2 rtl:ml-0 rtl:mr-2" onClick={handleQuickTransfer} isLoading={isTransferring}>
+                {t('dashboard.send')}
+              </Button>
             </div>
+            {!selectedContact && (
+              <p className="text-xs text-rose-400 text-center">{t('dashboard.quickTransferDesc')}</p>
+            )}
           </div>
         </Card>
       </div>

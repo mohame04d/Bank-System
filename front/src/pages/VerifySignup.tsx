@@ -7,6 +7,7 @@ import { useAuthStore } from '../store/useAuthStore';
 import { Key } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '../services/api';
+import { useTranslation } from 'react-i18next';
 
 export function VerifySignup() {
   const navigate = useNavigate();
@@ -14,6 +15,7 @@ export function VerifySignup() {
   const setAuth = useAuthStore((state) => state.setAuth);
   const [code, setCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { t } = useTranslation();
 
   const email = location.state?.email;
 
@@ -67,9 +69,9 @@ export function VerifySignup() {
           <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-white mb-4 shadow-lg shadow-primary/20">
             <Key size={24} />
           </div>
-          <h1 className="text-2xl font-bold text-slate-100">Verify Account</h1>
+          <h1 className="text-2xl font-bold text-slate-100">{t('auth.signupVerifyTitle')}</h1>
           <p className="text-slate-400 text-sm mt-1 text-center">
-            We sent a 6-digit code to <span className="text-slate-200">{email}</span>
+            {t('auth.signupVerifySubtitle')} <span className="text-slate-200">{email}</span>
           </p>
         </div>
 
@@ -86,14 +88,13 @@ export function VerifySignup() {
           />
 
           <Button type="submit" className="w-full" isLoading={isLoading}>
-            Verify
+            {t('auth.verifyButton')}
           </Button>
         </form>
 
         <p className="mt-6 text-center text-sm text-slate-400 relative z-10">
-          Didn't receive the code?{' '}
           <button onClick={handleResend} className="text-primary hover:text-primary-dark transition-colors font-medium">
-            Resend
+            {t('auth.resendCode')}
           </button>
         </p>
       </Card>

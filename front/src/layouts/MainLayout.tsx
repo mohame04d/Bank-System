@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Outlet, Navigate } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
@@ -6,6 +6,7 @@ import { useAuthStore } from '../store/useAuthStore';
 
 export function MainLayout() {
   const token = useAuthStore((state) => state.token);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Protected route logic
   if (!token) {
@@ -14,9 +15,9 @@ export function MainLayout() {
 
   return (
     <div className="flex h-screen bg-background text-slate-100 overflow-hidden font-sans">
-      <Sidebar />
+      <Sidebar isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <Header />
+        <Header onMenuClick={() => setIsMobileMenuOpen(true)} />
         <main className="flex-1 overflow-y-auto p-6 md:p-8">
           <div className="max-w-7xl mx-auto">
             <Outlet />

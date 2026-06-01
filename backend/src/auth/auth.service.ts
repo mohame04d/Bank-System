@@ -148,7 +148,7 @@ export class AuthService {
     });
 
     const payload = {
-      id: user.id,
+      sub: user.id,
       email: user.email,
       role: user.role,
     };
@@ -204,6 +204,8 @@ export class AuthService {
         lastName: true,
         failedLoginAttempts: true,
         lockedUntil: true,
+        avatar: true,
+        status: true,
       },
     });
 
@@ -215,6 +217,10 @@ export class AuthService {
       const remainingMs = user.lockedUntil.getTime() - Date.now();
       const remainingMin = Math.ceil(remainingMs / 60000);
       throw new UnauthorizedException(`Account locked. Try again in ${remainingMin} minute${remainingMin > 1 ? 's' : ''}.`);
+    }
+
+    if (user.status === 'FROZEN') {
+      throw new UnauthorizedException('Your account has been frozen by an administrator. Please contact support.');
     }
 
     const isPasswordValid = await bcrypt.compare(signInDto.password, user.passwordHash);
@@ -251,7 +257,7 @@ export class AuthService {
     }
 
     const payload = {
-      id: user.id,
+      sub: user.id,
       email: user.email,
       role: user.role,
     };
@@ -325,7 +331,6 @@ export class AuthService {
     return {
       status: 'success',
       message: 'If this email exists, a verification code has been sent.',
-      _dev_token: code, // keep for dev purposes without actual email sent
     };
   }
 
@@ -451,6 +456,7 @@ export class AuthService {
           firstName: true,
           lastName: true,
           refreshToken: true,
+          avatar: true,
         },
       });
 
@@ -471,7 +477,7 @@ export class AuthService {
       }
 
       const payload = {
-        id: user.id,
+        sub: user.id,
         email: user.email,
         role: user.role,
       };

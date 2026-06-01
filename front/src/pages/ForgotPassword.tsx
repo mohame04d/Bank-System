@@ -5,10 +5,12 @@ import { Input } from '../components/ui/Input';
 import { Key } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '../services/api';
+import { useTranslation } from 'react-i18next';
 
 export function ForgotPassword() {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { t } = useTranslation();
 
   const navigate = useNavigate();
 
@@ -19,11 +21,6 @@ export function ForgotPassword() {
     try {
       const response = await api.post('/auth/reset-password', { email });
       toast.success(response.data.message || 'If an account exists, a verification code has been sent.');
-      
-      // For development MVP, show the token in a toast so they can copy it
-      if (response.data._dev_token) {
-        toast.info(`DEV MODE TOKEN: ${response.data._dev_token}`, { duration: 10000 });
-      }
 
       navigate('/verify-reset', { state: { email } });
     } catch (error: any) {
@@ -42,18 +39,18 @@ export function ForgotPassword() {
           <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4">
             <Key className="w-6 h-6 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-100">Forgot Password</h1>
+          <h1 className="text-2xl font-bold text-slate-100">{t('auth.forgotPassword')}</h1>
           <p className="text-slate-400 text-sm mt-2 text-center">
-            Enter your email address and we'll send you a link to reset your password.
+            {t('auth.resetPasswordSubtitle')}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
             <Input
-              label="Email Address"
+              label={t('auth.email')}
               type="email"
-              placeholder="you@example.com"
+              placeholder={t('auth.emailPlaceholder')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -63,14 +60,14 @@ export function ForgotPassword() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-2.5 rounded-lg transition-colors disabled:opacity-50"
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-2.5 rounded-lg transition-colors disabled:opacity-50 mt-6"
           >
-            {isLoading ? 'Sending...' : 'Send Reset Link'}
+            {isLoading ? t('auth.loading') : t('auth.sendLinkButton')}
           </button>
           
-          <div className="text-center">
+          <div className="text-center mt-4">
             <Link to="/login" className="text-sm text-slate-400 hover:text-primary transition-colors">
-              Back to Login
+              {t('auth.backToLogin')}
             </Link>
           </div>
         </form>

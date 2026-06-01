@@ -22,6 +22,13 @@ export class StripeService {
 
     if (!account) throw new BadRequestException('No eligible account found for deposit');
 
+    // Bypass real Stripe API if using the placeholder key for local testing
+    if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY.includes('sk_test_placeholder')) {
+      return {
+        clientSecret: 'mock_client_secret_for_local_testing',
+      };
+    }
+
     const paymentIntent = await this.stripe.paymentIntents.create({
       amount: Math.round(amount * 100), // convert to cents
       currency: 'usd',

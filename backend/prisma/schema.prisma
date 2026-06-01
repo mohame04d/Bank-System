@@ -13,11 +13,13 @@ model User {
   firstName     String
   lastName      String
   phoneNumber   String?
-  role          Role      @default(CUSTOMER)
+  role          Role        @default(CUSTOMER)
+  status        UserStatus  @default(ACTIVE)
   accounts      Account[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   stripeId            String?   // Stripe customer ID
+  avatar              String?   @db.Text
   resetPasswordToken  String?
   resetPasswordExpires DateTime?
   verificationCode    String?
@@ -39,6 +41,11 @@ enum Role {
   ADMIN
 }
 
+enum UserStatus {
+  ACTIVE
+  FROZEN
+}
+
 model Account {
   id            String        @id @default(uuid())
   accountNumber String        @unique
@@ -46,7 +53,7 @@ model Account {
   currency      String        @default("USD")
   type          AccountType   @default(CHECKING)
   userId        String
-  user          User          @relation(fields: [userId], references: [id])
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactions  Transaction[] @relation("AccountTransactions")
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
@@ -63,7 +70,7 @@ model Transaction {
   type            TransactionType
   status          TransactionStatus @default(PENDING)
   accountId       String
-  account         Account           @relation("AccountTransactions", fields: [accountId], references: [id])
+  account         Account           @relation("AccountTransactions", fields: [accountId], references: [id], onDelete: Cascade)
   referenceId     String?
   description     String?
   createdAt       DateTime          @default(now())

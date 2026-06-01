@@ -9,11 +9,11 @@ import { getResetPasswordHtml } from './templates/verification-resetpassword';
 export class EmailService {
   private resend: Resend;
   private readonly logger = new Logger(EmailService.name);
-  
-  private readonly defaultFrom = 'NeuroMeet <info@anasdev.shop>';
+
+  private readonly defaultFrom = 'Bank <onboarding@resend.dev>';
 
   constructor() {
-    const apiKey = process.env.RESEND_API_KEY;
+    const apiKey = process.env.RESEND_API_KEY?.trim();
 
     if (!apiKey) {
       throw new Error('Resend API key is required');
@@ -59,7 +59,7 @@ export class EmailService {
 
       const { data, error } = await this.resend.emails.send({
         from: this.defaultFrom, // ✅ التعديل هنا
-        to: email, 
+        to: email,
         subject: 'Your Verification Code',
         html: htmlContent,
       });

@@ -52,10 +52,11 @@ export class TransactionsService {
       // 5. Create transaction records
       const withdrawal = await prisma.transaction.create({
         data: {
-          amount,
+          amount: -amount,
           type: 'TRANSFER',
           status: 'COMPLETED',
           accountId: fromAccountId,
+          referenceId: toAccountNumber,
           description: description || `Transfer to ${toAccountNumber}`,
         },
       });
@@ -66,6 +67,7 @@ export class TransactionsService {
           type: 'TRANSFER',
           status: 'COMPLETED',
           accountId: toAccount.id,
+          referenceId: fromAccount.accountNumber,
           description: `Transfer from ${fromAccount.accountNumber}`,
         },
       });
