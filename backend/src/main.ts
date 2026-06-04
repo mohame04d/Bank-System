@@ -23,6 +23,17 @@ async function bootstrap() {
     }),
   );
 
+  // Body parser limits (preserve rawBody for Stripe Webhooks)
+  app.use(
+    express.json({
+      limit: '50mb',
+      verify: (req: any, res, buf) => {
+        req.rawBody = buf;
+      },
+    }),
+  );
+  app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
   // Validation
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 

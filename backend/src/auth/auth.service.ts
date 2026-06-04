@@ -558,7 +558,7 @@ export class AuthService {
       }
 
       const user = await this.prisma.user.findUnique({
-        where: { id: decoded.id },
+        where: { id: decoded.sub },
         select: {
           id: true,
           email: true,
