@@ -28,6 +28,23 @@ model User {
   failedLoginAttempts Int         @default(0)
   lockedUntil         DateTime?
   refreshToken        String?
+  
+  // 2FA Fields
+  twoFactorSecret     String?
+  isTwoFactorEnabled  Boolean     @default(false)
+  
+  // KYC Fields
+  kycStatus           KycStatus   @default(UNVERIFIED)
+  kycDocumentUrl      String?     @db.Text
+  
+  notifications       Notification[]
+}
+
+enum KycStatus {
+  UNVERIFIED
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 enum OtpPurpose {
@@ -55,8 +72,27 @@ model Account {
   userId        String
   user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactions  Transaction[] @relation("AccountTransactions")
+  cards         Card[]        @relation("AccountCards")
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
+}
+
+model Card {
+  id            String      @id @default(uuid())
+  cardNumber    String      @unique
+  cvv           String
+  expiry        String      // MM/YY
+  status        CardStatus  @default(ACTIVE)
+  dailyLimit    Float?
+  accountId     String
+  account       Account     @relation("AccountCards", fields: [accountId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+enum CardStatus {
+  ACTIVE
+  FROZEN
 }
 
 enum AccountType {
@@ -86,4 +122,14 @@ enum TransactionStatus {
   PENDING
   COMPLETED
   FAILED
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 }

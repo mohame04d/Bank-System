@@ -42,6 +42,12 @@ export class AuthController {
     return this.authService.signIn(signInDto);
   }
 
+  @Throttle({ default: { ttl: 60000, limit: 5 } })
+  @Post('/sign-in/2fa')
+  verifyTwoFactorLogin(@Body('tempToken') tempToken: string, @Body('code') code: string) {
+    return this.authService.verifyTwoFactorLogin(tempToken, code);
+  }
+
   @Throttle({ default: { ttl: 60000, limit: 3 } })
   @Post('/reset-password')
   resetPassword(@Body() dto: ResetPasswordDto) {
@@ -72,5 +78,24 @@ export class AuthController {
   @UseGuards(AuthGuard)
   logout(@Req() req: any) {
     return this.authService.logout(req.user.userId || req.user.id);
+  }
+
+  // 2FA Endpoints
+  @Post('/2fa/generate')
+  @UseGuards(AuthGuard)
+  generateTwoFactorSecret(@Req() req: any) {
+    return this.authService.generateTwoFactorSecret(req.user.userId, req.user.email);
+  }
+
+  @Post('/2fa/turn-on')
+  @UseGuards(AuthGuard)
+  turnOnTwoFactorAuthentication(@Req() req: any, @Body('code') code: string) {
+    return this.authService.turnOnTwoFactorAuthentication(req.user.userId, code);
+  }
+
+  @Post('/2fa/turn-off')
+  @UseGuards(AuthGuard)
+  turnOffTwoFactorAuthentication(@Req() req: any, @Body('code') code: string) {
+    return this.authService.turnOffTwoFactorAuthentication(req.user.userId, code);
   }
 }

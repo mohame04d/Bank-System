@@ -8,6 +8,8 @@ import { AccountsModule } from './accounts/accounts.module';
 import { TransactionsModule } from './transactions/transactions.module';
 import { StripeModule } from './stripe/stripe.module';
 import { EmailModule } from './emails/email.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { CardsModule } from './cards/cards.module';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { EmailModule } from './emails/email.module';
     TransactionsModule,
     StripeModule,
     EmailModule,
+    NotificationsModule,
+    CardsModule,
   ],
 })
 export class AppModule {}

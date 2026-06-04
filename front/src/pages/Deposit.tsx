@@ -18,7 +18,7 @@ import api from '../services/api';
 import { useTranslation } from 'react-i18next';
 
 // Use environment variable for Stripe publishable key, fallback to test key if not provided
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_TYooMQauvdEDq54NiTphI7jx');
+const stripePromise = loadStripe('pk_test_51ShEWOALf03aBKGZ9SRKZyulhCcwALDbmSunV7JXHL69FL3luORedqQ4caAakmiomRHJiVhlOH41BsAyNCgw5X3e00bS4TyfnK');
 
 const CheckoutForm = () => {
   const stripe = useStripe();
@@ -56,21 +56,7 @@ const CheckoutForm = () => {
       const response = await api.post('/stripe/create-payment-intent', { amount: Number(depositAmount) });
       const { clientSecret } = response.data;
       
-      // Local Test Bypass
-      if (clientSecret === 'mock_client_secret_for_local_testing') {
-        await api.post('/stripe/confirm-test-deposit', { amount: Number(depositAmount) });
-        toast.success(t('deposit.successMessage', { amount: depositAmount }) + ' ' + t('deposit.testMode'));
-        if (!confirmModal.isQuick) {
-          setAmount('');
-          elements.getElement(CardElement)?.clear();
-        }
-        setTimeout(() => {
-          queryClient.invalidateQueries({ queryKey: ['accounts'] });
-          queryClient.invalidateQueries({ queryKey: ['history'] });
-        }, 500);
-        setIsLoading(false);
-        return;
-      }
+      // No local mock bypass - always use real Stripe Flow
 
       // 2. Confirm the card payment
       const result = await stripe.confirmCardPayment(clientSecret, {
@@ -86,9 +72,6 @@ const CheckoutForm = () => {
       if (result.error) {
         toast.error(result.error.message || t('deposit.failedMessage'));
       } else {
-        // For local testing: update balance immediately
-        await api.post('/stripe/confirm-test-deposit', { amount: Number(depositAmount) });
-        
         toast.success(t('deposit.successMessage', { amount: depositAmount }));
         setAmount('');
         elements.getElement(CardElement)?.clear();

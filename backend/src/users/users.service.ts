@@ -12,9 +12,23 @@ export class UsersService {
     });
   }
 
-  async findById(id: string): Promise<User | null> {
+  async findById(id: string) {
     return this.prisma.user.findUnique({
       where: { id },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        phoneNumber: true,
+        role: true,
+        status: true,
+        avatar: true,
+        isTwoFactorEnabled: true,
+        kycStatus: true,
+        kycDocumentUrl: true,
+        createdAt: true,
+      }
     });
   }
 

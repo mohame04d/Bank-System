@@ -1,9 +1,13 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class TransactionsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationsService: NotificationsService
+  ) {}
 
   async getHistory(userId: string) {
     return this.prisma.transaction.findMany({
@@ -21,7 +25,7 @@ export class TransactionsService {
     if (amount <= 0) throw new BadRequestException('Amount must be positive');
 
     // Perform transfer in a transaction
-    return this.prisma.$transaction(async (prisma) => {
+    const result = await this.prisma.$transaction(async (prisma) => {
       // 1. Get sender account
       const fromAccount = await prisma.account.findFirst({
         where: { id: fromAccountId, userId },
@@ -72,8 +76,46 @@ export class TransactionsService {
         },
       });
 
-      return withdrawal;
+      return { withdrawal, toUserId: toAccount.userId, fromAccountNumber: fromAccount.accountNumber };
     });
+
+    this.notificationsService.createAndSend(
+      result.toUserId,
+      'Incoming Transfer',
+      `You received $${amount} from ${result.fromAccountNumber}`
+    );
+
+    return result.withdrawal;
+  }
+
+  async getAnalytics(userId: string) {
+    const transactions = await this.prisma.transaction.findMany({
+      where: {
+        account: { userId },
+        amount: { lt: 0 } // Only expenses
+      }
+    });
+
+    // Group by simple logic: Transfers vs Withdrawals (if categorized)
+    // For this simple banking app, we'll group by type
+    const grouped = transactions.reduce((acc, tx) => {
+      acc[tx.type] = (acc[tx.type] || 0) + Math.abs(tx.amount);
+      return acc;
+    }, {} as Record<string, number>);
+
+    return Object.keys(grouped).map(name => ({
+      name,
+      value: grouped[name]
+    }));
+  }
+
+  async exportHistory(userId: string) {
+    const transactions = await this.getHistory(userId);
+    let csv = 'ID,Date,Description,Type,Amount,Status\n';
+    transactions.forEach(tx => {
+      csv += `${tx.id},${tx.createdAt.toISOString()},"${tx.description || ''}",${tx.type},${tx.amount},${tx.status}\n`;
+    });
+    return csv;
   }
 
   async getAllSystemTransactions() {

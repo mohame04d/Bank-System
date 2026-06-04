@@ -8,7 +8,7 @@
     "profile": "Profile",
     "admin": "Admin Panel",
     "logout": "Logout",
-    "ziad": "Ziad El-Lift"
+    "ziad": "Bank System"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -33,7 +33,16 @@
     "loading": "Loading transactions..."
   },
   "header": {
-    "search": "Search..."
+    "search": "Search...",
+    "notifications": "Notifications",
+    "markAllAsRead": "Mark all as read",
+    "noNotifications": "No notifications yet"
+  },
+  "notifications": {
+    "DepositSuccessful": "Deposit Successful",
+    "DepositSuccessfulMessage": "An amount of ${{amount}} has been added to your account.",
+    "IncomingTransfer": "Incoming Transfer",
+    "IncomingTransferMessage": "You received ${{amount}} from {{from}}"
   },
   "transfer": {
     "title": "Transfer Money",
@@ -112,7 +121,37 @@
     "currentPassword": "Current Password",
     "newPassword": "New Password",
     "confirmPassword": "Confirm New Password",
-    "updatePassword": "Update Password"
+    "updatePassword": "Update Password",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "readOnly": "(Read-only)",
+    "security": "Security",
+    "accountSecured": "Account Secured",
+    "accountSecuredDesc": "Your account is protected by industry standard encryption and JWT authentication.",
+    "twoFactor": "Two-Factor Authentication (2FA)",
+    "twoFactorDesc": "Add an extra layer of security to your account.",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "setup2FA": "Set up 2FA",
+    "twoFactorStep1": "1. Scan this QR code with your Authenticator app (e.g. Google Authenticator).",
+    "twoFactorStep2": "2. Enter the 6-digit code below to verify.",
+    "verifyEnable": "Verify & Enable",
+    "disable2FAPrompt": "To disable 2FA, please enter a code from your authenticator app.",
+    "disable2FA": "Disable 2FA",
+    "identityVerification": "Identity Verification",
+    "kycStatus": "KYC Status",
+    "kycDesc": "Verify your identity to unlock higher limits.",
+    "uploadPrompt": "Upload a clear photo of your ID, Passport, or Driver's License.",
+    "successProfileUpdate": "Profile updated successfully",
+    "failedProfileUpdate": "Failed to update profile",
+    "success2FADisable": "2FA Disabled Successfully!",
+    "success2FAEnable": "2FA Enabled Successfully!",
+    "failed2FA": "Invalid code",
+    "imageSizeError": "Image size must be less than 2MB",
+    "successKyc": "KYC Document submitted successfully!",
+    "failedKyc": "Failed to submit KYC",
+    "unverified": "UNVERIFIED"
   },
   "common": {
     "confirm": "Confirm",
@@ -144,5 +183,53 @@
     "sendLinkButton": "Send Reset Link",
     "backToLogin": "Back to Login",
     "loading": "Please wait..."
+  },
+  "admin": {
+    "title": "Admin Dashboard",
+    "subtitle": "System overview and user management",
+    "totalUsers": "Total Users",
+    "totalFunds": "Total System Funds",
+    "totalTransactions": "Total Transactions",
+    "allUsers": "All Users",
+    "user": "User",
+    "roleStatus": "Role & Status",
+    "totalBalance": "Total Balance",
+    "actions": "Actions",
+    "revokeAdmin": "Revoke Admin",
+    "makeAdmin": "Make Admin",
+    "freezeAccount": "Freeze Account",
+    "unfreezeAccount": "Unfreeze Account",
+    "deleteUser": "Delete User",
+    "confirmDelete": "Are you sure you want to permanently delete this user?",
+    "recentTransactions": "Recent Global Transactions",
+    "type": "Type",
+    "amount": "Amount",
+    "date": "Date",
+    "pendingKyc": "Pending KYC Verifications",
+    "noPendingKyc": "No pending KYC requests.",
+    "approve": "Approve",
+    "reject": "Reject",
+    "successDelete": "User deleted successfully",
+    "successRole": "User role updated",
+    "successStatus": "User status updated",
+    "successKyc": "KYC status updated"
+  },
+  "cards": {
+    "title": "My Cards",
+    "subtitle": "Manage your virtual credit cards",
+    "newVirtualCard": "New Virtual Card",
+    "noCardsFound": "No Cards Found",
+    "noCardsDesc": "Create a virtual card instantly to start making secure online payments.",
+    "cardIsFrozen": "Card is Frozen",
+    "unfreezeCard": "Unfreeze Card",
+    "freezeCard": "Freeze Card",
+    "virtual": "Virtual",
+    "cardHolder": "Card Holder",
+    "valuedCustomer": "Valued Customer",
+    "expires": "Expires",
+    "cvv": "CVV",
+    "dailyLimit": "Daily Limit",
+    "successCreate": "Virtual card created successfully!",
+    "successStatus": "Card status updated"
   }
 }

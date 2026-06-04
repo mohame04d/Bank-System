@@ -23,9 +23,10 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose: () => v
 
   const navItems = [
     { name: t('nav.dashboard'), path: '/dashboard', icon: <LayoutDashboard size={20} /> },
-    { name: t('nav.accounts'), path: '/accounts', icon: <CreditCard size={20} /> },
+    { name: t('nav.accounts'), path: '/accounts', icon: <Wallet size={20} /> },
     { name: t('nav.transfer'), path: '/transfer', icon: <ArrowRightLeft size={20} /> },
-    { name: t('nav.deposit'), path: '/deposit', icon: <Wallet size={20} /> },
+    { name: t('nav.deposit'), path: '/deposit', icon: <ArrowRightLeft size={20} /> },
+    { name: 'Cards', path: '/cards', icon: <CreditCard size={20} /> },
     { name: t('nav.history'), path: '/history', icon: <History size={20} /> },
     { name: t('nav.profile'), path: '/profile', icon: <Settings size={20} /> },
   ];

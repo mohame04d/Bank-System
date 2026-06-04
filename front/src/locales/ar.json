@@ -8,7 +8,7 @@
     "profile": "الملف الشخصي",
     "admin": "لوحة الإدارة",
     "logout": "تسجيل الخروج",
-    "ziad": "زياد الليفت"
+    "ziad": "بنك سيستم"
   },
   "dashboard": {
     "title": "لوحة التحكم",
@@ -33,7 +33,16 @@
     "loading": "جاري تحميل المعاملات..."
   },
   "header": {
-    "search": "ابحث..."
+    "search": "بحث...",
+    "notifications": "الإشعارات",
+    "markAllAsRead": "تحديد الكل كمقروء",
+    "noNotifications": "لا توجد إشعارات حتى الآن"
+  },
+  "notifications": {
+    "DepositSuccessful": "تم الإيداع بنجاح",
+    "DepositSuccessfulMessage": "تم إضافة مبلغ ${{amount}} إلى حسابك بنجاح.",
+    "IncomingTransfer": "حوالة واردة",
+    "IncomingTransferMessage": "لقد استلمت مبلغ ${{amount}} من الحساب {{from}}"
   },
   "transfer": {
     "title": "تحويل الأموال",
@@ -112,7 +121,37 @@
     "currentPassword": "كلمة المرور الحالية",
     "newPassword": "كلمة المرور الجديدة",
     "confirmPassword": "تأكيد كلمة المرور الجديدة",
-    "updatePassword": "تحديث كلمة المرور"
+    "updatePassword": "تحديث كلمة المرور",
+    "edit": "تعديل",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "readOnly": "(للقراءة فقط)",
+    "security": "الأمان",
+    "accountSecured": "حساب آمن",
+    "accountSecuredDesc": "حسابك محمي بتشفير قياسي ومصادقة JWT القوية.",
+    "twoFactor": "المصادقة الثنائية (2FA)",
+    "twoFactorDesc": "أضف طبقة أمان إضافية لحسابك.",
+    "enabled": "مفعل",
+    "disabled": "معطل",
+    "setup2FA": "إعداد 2FA",
+    "twoFactorStep1": "1. قم بمسح هذا الرمز باستخدام تطبيق المصادقة (مثل Google Authenticator).",
+    "twoFactorStep2": "2. أدخل الرمز المكون من 6 أرقام أدناه للتأكيد.",
+    "verifyEnable": "تأكيد وتفعيل",
+    "disable2FAPrompt": "لتعطيل 2FA، يرجى إدخال الرمز من تطبيق المصادقة الخاص بك.",
+    "disable2FA": "تعطيل 2FA",
+    "identityVerification": "التحقق من الهوية",
+    "kycStatus": "حالة التحقق (KYC)",
+    "kycDesc": "قم بتأكيد هويتك لفتح حدود أعلى للحساب.",
+    "uploadPrompt": "قم برفع صورة واضحة لبطاقة الهوية أو جواز السفر أو رخصة القيادة.",
+    "successProfileUpdate": "تم تحديث الملف الشخصي بنجاح",
+    "failedProfileUpdate": "فشل تحديث الملف الشخصي",
+    "success2FADisable": "تم تعطيل المصادقة الثنائية بنجاح!",
+    "success2FAEnable": "تم تفعيل المصادقة الثنائية بنجاح!",
+    "failed2FA": "رمز غير صالح",
+    "imageSizeError": "يجب أن يكون حجم الصورة أقل من 2 ميغابايت",
+    "successKyc": "تم إرسال مستند الهوية بنجاح!",
+    "failedKyc": "فشل إرسال مستند الهوية",
+    "unverified": "غير موثق"
   },
   "common": {
     "confirm": "تأكيد",
@@ -144,5 +183,53 @@
     "sendLinkButton": "إرسال رابط التعيين",
     "backToLogin": "العودة لتسجيل الدخول",
     "loading": "يرجى الانتظار..."
+  },
+  "admin": {
+    "title": "لوحة الإدارة",
+    "subtitle": "نظرة عامة على النظام وإدارة المستخدمين",
+    "totalUsers": "إجمالي المستخدمين",
+    "totalFunds": "إجمالي أموال النظام",
+    "totalTransactions": "إجمالي المعاملات",
+    "allUsers": "جميع المستخدمين",
+    "user": "المستخدم",
+    "roleStatus": "الدور والحالة",
+    "totalBalance": "إجمالي الرصيد",
+    "actions": "إجراءات",
+    "revokeAdmin": "إلغاء الإدارة",
+    "makeAdmin": "تعيين كمدير",
+    "freezeAccount": "تجميد الحساب",
+    "unfreezeAccount": "إلغاء التجميد",
+    "deleteUser": "حذف المستخدم",
+    "confirmDelete": "هل أنت متأكد أنك تريد حذف هذا المستخدم نهائياً؟",
+    "recentTransactions": "التحويلات العالمية الأخيرة",
+    "type": "النوع",
+    "amount": "المبلغ",
+    "date": "التاريخ",
+    "pendingKyc": "طلبات التحقق المعلقة",
+    "noPendingKyc": "لا توجد طلبات تحقق معلقة.",
+    "approve": "موافقة",
+    "reject": "رفض",
+    "successDelete": "تم حذف المستخدم بنجاح",
+    "successRole": "تم تحديث دور المستخدم",
+    "successStatus": "تم تحديث حالة الحساب",
+    "successKyc": "تم تحديث حالة التحقق"
+  },
+  "cards": {
+    "title": "بطاقاتي",
+    "subtitle": "إدارة بطاقاتك الائتمانية الافتراضية",
+    "newVirtualCard": "بطاقة افتراضية جديدة",
+    "noCardsFound": "لا توجد بطاقات",
+    "noCardsDesc": "قم بإنشاء بطاقة افتراضية فوراً للبدء في إجراء عمليات دفع آمنة عبر الإنترنت.",
+    "cardIsFrozen": "البطاقة مجمدة",
+    "unfreezeCard": "إلغاء التجميد",
+    "freezeCard": "تجميد البطاقة",
+    "virtual": "افتراضية",
+    "cardHolder": "حامل البطاقة",
+    "valuedCustomer": "عميل مميز",
+    "expires": "الانتهاء",
+    "cvv": "الرمز",
+    "dailyLimit": "الحد اليومي",
+    "successCreate": "تم إنشاء البطاقة بنجاح!",
+    "successStatus": "تم تحديث حالة البطاقة"
   }
 }

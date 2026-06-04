@@ -12,6 +12,16 @@ export class TransactionsController {
     return this.transactionsService.getHistory(req.user.userId);
   }
 
+  @Get('analytics')
+  async getAnalytics(@Req() req: any) {
+    return this.transactionsService.getAnalytics(req.user.userId);
+  }
+
+  @Get('export')
+  async exportHistory(@Req() req: any) {
+    return this.transactionsService.exportHistory(req.user.userId);
+  }
+
   @Post('transfer')
   async transfer(
     @Req() req: any,

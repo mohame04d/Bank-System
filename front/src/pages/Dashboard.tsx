@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { formatCurrency } from '../utils/format';
-import { ArrowUpRight, ArrowDownRight, CreditCard, Send, Plus } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, CreditCard, Send, Plus, PieChart as PieChartIcon } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import api from '../services/api';
 import { useAuthStore } from '../store/useAuthStore';
 import { Link } from 'react-router-dom';
@@ -33,6 +34,14 @@ export function Dashboard() {
     queryKey: ['history'],
     queryFn: async () => {
       const { data } = await api.get('/transactions/history');
+      return data;
+    },
+  });
+
+  const { data: analytics, isLoading: analyticsLoading } = useQuery({
+    queryKey: ['analytics'],
+    queryFn: async () => {
+      const { data } = await api.get('/transactions/analytics');
       return data;
     },
   });
@@ -262,6 +271,45 @@ export function Dashboard() {
               <p className="text-xs text-rose-400 text-center">{t('dashboard.quickTransferDesc')}</p>
             )}
           </div>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6">
+        <Card>
+          <div className="flex items-center gap-2 mb-6">
+            <PieChartIcon className="text-primary" size={24} />
+            <h3 className="text-lg font-semibold text-slate-100">Expense Analytics</h3>
+          </div>
+          {analyticsLoading ? (
+            <p className="text-slate-400 p-4">Loading analytics...</p>
+          ) : analytics?.length === 0 ? (
+             <p className="text-slate-400 p-4">No expenses to analyze yet.</p>
+          ) : (
+            <div className="h-64 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={analytics}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {analytics.map((entry: any, index: number) => (
+                      <Cell key={`cell-${index}`} fill={['#10b981', '#f43f5e', '#3b82f6', '#8b5cf6'][index % 4]} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    formatter={(value: number) => formatCurrency(value)}
+                    contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }}
+                  />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          )}
         </Card>
       </div>
     </div>

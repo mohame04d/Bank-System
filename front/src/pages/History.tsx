@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Card } from '../components/ui/Card';
-import { ArrowDownRight, ArrowUpRight, Search, Filter } from 'lucide-react';
+import { ArrowDownRight, ArrowUpRight, Search, Filter, Download } from 'lucide-react';
+import { Button } from '../components/ui/Button';
 import { formatCurrency, formatDate } from '../utils/format';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
@@ -46,6 +47,27 @@ export function History() {
           <h1 className="text-2xl font-bold text-slate-100">{t('history.title')}</h1>
           <p className="text-slate-400">{t('history.subtitle')}</p>
         </div>
+        <Button 
+          variant="outline" 
+          className="gap-2"
+          onClick={async () => {
+            try {
+              const res = await api.get('/transactions/export');
+              const blob = new Blob([res.data], { type: 'text/csv' });
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = 'transactions_export.csv';
+              a.click();
+              window.URL.revokeObjectURL(url);
+              toast.success('Export started!');
+            } catch (e) {
+              toast.error('Export failed');
+            }
+          }}
+        >
+          <Download size={16} /> Export CSV
+        </Button>
       </div>
 
       <Card className="p-0 overflow-hidden">

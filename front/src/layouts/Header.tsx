@@ -3,6 +3,8 @@ import { Bell, Search, Menu, Globe } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
 import { useTranslation } from 'react-i18next';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import api from '../services/api';
 
 export function Header({ onMenuClick }: { onMenuClick: () => void }) {
   const user = useAuthStore((state) => state.user);
@@ -11,6 +13,41 @@ export function Header({ onMenuClick }: { onMenuClick: () => void }) {
   const toggleLanguage = () => {
     i18n.changeLanguage(i18n.language === 'ar' ? 'en' : 'ar');
   };
+
+  const [showNotifications, setShowNotifications] = React.useState(false);
+  const queryClient = useQueryClient();
+
+  const { data: notifications = [] } = useQuery({
+    queryKey: ['notifications'],
+    queryFn: async () => {
+      const response = await api.get('/notifications');
+      return response.data;
+    },
+    enabled: !!user,
+  });
+
+  const markAllAsReadMutation = useMutation({
+    mutationFn: async () => {
+      await api.put('/notifications/read-all');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    },
+  });
+
+  const unreadCount = notifications.filter((n: any) => !n.isRead).length;
+
+  // Close dropdown when clicking outside
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
     <header className="h-16 border-b border-slate-700/50 bg-background/80 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between px-6">
@@ -48,10 +85,62 @@ export function Header({ onMenuClick }: { onMenuClick: () => void }) {
           <span className="text-sm font-medium">{i18n.language === 'ar' ? 'EN' : 'ع'}</span>
         </button>
 
-        <button className="relative p-2 text-slate-400 hover:text-slate-100 transition-colors rounded-full hover:bg-slate-800/50">
-          <Bell size={20} />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-background"></span>
-        </button>
+        <div className="relative" ref={dropdownRef}>
+          <button 
+            onClick={() => setShowNotifications(!showNotifications)}
+            className="relative p-2 text-slate-400 hover:text-slate-100 transition-colors rounded-full hover:bg-slate-800/50"
+          >
+            <Bell size={20} />
+            {unreadCount > 0 && (
+              <span className="absolute top-1 right-1 w-4 h-4 bg-rose-500 rounded-full border-2 border-background text-[8px] font-bold text-white flex items-center justify-center">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </button>
+
+          {showNotifications && (
+            <div className="absolute end-0 mt-2 w-80 bg-slate-900 border border-slate-700 rounded-xl shadow-xl overflow-hidden z-50">
+              <div className="p-4 border-b border-slate-700/50 flex justify-between items-center">
+                <h3 className="font-semibold text-slate-100">{t('header.notifications')}</h3>
+                {unreadCount > 0 && (
+                  <button 
+                    onClick={() => markAllAsReadMutation.mutate()}
+                    className="text-xs text-primary hover:underline"
+                  >
+                    {t('header.markAllAsRead')}
+                  </button>
+                )}
+              </div>
+              <div className="max-h-96 overflow-y-auto">
+                {notifications.length === 0 ? (
+                  <div className="p-8 text-center text-slate-500 text-sm">
+                    {t('header.noNotifications')}
+                  </div>
+                ) : (
+                  notifications.map((notif: any) => (
+                    <div 
+                      key={notif.id} 
+                      className={`p-4 border-b border-slate-800/50 hover:bg-slate-800/50 transition-colors ${!notif.isRead ? 'bg-slate-800/20' : ''}`}
+                    >
+                      <div className="flex justify-between items-start gap-2">
+                        <h4 className={`text-sm ${!notif.isRead ? 'font-semibold text-slate-200' : 'text-slate-300'}`}>
+                          {t(`notifications.${notif.title.replace(/\s+/g, '')}`, notif.title)}
+                        </h4>
+                        {!notif.isRead && <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0 mt-1" />}
+                      </div>
+                      <p className="text-xs text-slate-400 mt-1 line-clamp-2">
+                         {t(`notifications.${notif.title.replace(/\s+/g, '')}Message`, notif.message, { amount: notif.message.match(/\$(\d+(\.\d+)?)/)?.[1] || '', from: notif.message.split('from ')[1] || '' })}
+                      </p>
+                      <p className="text-[10px] text-slate-500 mt-2">
+                        {new Date(notif.createdAt).toLocaleDateString()} {new Date(notif.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                      </p>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+        </div>
         
           <Link to="/profile" className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer">
             <div className="hidden sm:block text-right">

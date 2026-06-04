@@ -7,7 +7,6 @@ import * as express from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { 
-    bodyParser: false, 
     rawBody: true 
   });
   
@@ -15,10 +14,6 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   app.use(helmet());
   app.enableCors();
-  
-  // Increase payload size limits for base64 image uploads
-  app.use(express.json({ limit: '50mb' }));
-  app.use(express.urlencoded({ limit: '50mb', extended: true }));
   
   // Rate limiting
   app.use(

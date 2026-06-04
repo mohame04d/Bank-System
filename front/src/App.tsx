@@ -10,6 +10,7 @@ import { Transfer } from './pages/Transfer';
 import { History } from './pages/History';
 import { Deposit } from './pages/Deposit';
 import { Accounts } from './pages/Accounts';
+import { Cards } from './pages/Cards';
 import { Profile } from './pages/Profile';
 import { ForgotPassword } from './pages/ForgotPassword';
 import { ResetPassword } from './pages/ResetPassword';
@@ -17,6 +18,7 @@ import { VerifySignup } from './pages/VerifySignup';
 import { VerifyReset } from './pages/VerifyReset';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { AdminRoute } from './components/AdminRoute';
+import { SocketProvider } from './providers/SocketProvider';
 import { Toaster } from 'sonner';
 
 const queryClient = new QueryClient();
@@ -38,8 +40,9 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <Routes>
+      <SocketProvider>
+        <BrowserRouter>
+          <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/verify-signup" element={<VerifySignup />} />
@@ -53,6 +56,7 @@ function App() {
             <Route path="/accounts" element={<Accounts />} />
             <Route path="/transfer" element={<Transfer />} />
             <Route path="/deposit" element={<Deposit />} />
+            <Route path="/cards" element={<Cards />} />
             <Route path="/history" element={<History />} />
             <Route path="/profile" element={<Profile />} />
             
@@ -67,6 +71,7 @@ function App() {
         </Routes>
         <Toaster theme="dark" richColors position="top-right" />
       </BrowserRouter>
+      </SocketProvider>
     </QueryClientProvider>
   );
 }

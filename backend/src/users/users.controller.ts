@@ -7,6 +7,12 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @UseGuards(JwtAuthGuard)
+  @Get('profile')
+  async getProfile(@Req() req: any) {
+    return this.usersService.findById(req.user.userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Put('profile')
   async updateProfile(@Req() req: any, @Body() body: { firstName?: string; lastName?: string; phoneNumber?: string; avatar?: string }) {
     return this.usersService.updateProfile(req.user.userId, body);

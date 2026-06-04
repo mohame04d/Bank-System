@@ -2,9 +2,15 @@ import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
+  BadRequestException,
   HttpException,
 } from '@nestjs/common';
 import { randomInt, timingSafeEqual } from 'crypto';
+import { authenticator } from 'otplib';
+import * as qrcode from 'qrcode';
+
+// Increase the verification window to allow for clock drift (up to 5 minutes)
+authenticator.options = { window: 10 };
 
 import {
   SignInDto,
@@ -206,6 +212,7 @@ export class AuthService {
         lockedUntil: true,
         avatar: true,
         status: true,
+        isTwoFactorEnabled: true,
       },
     });
 
@@ -256,6 +263,23 @@ export class AuthService {
       });
     }
 
+    if (user.isTwoFactorEnabled) {
+      const payload = { sub: user.id, email: user.email, isTwoFactorPending: true };
+      const tempToken = this.jwtService.sign(payload, {
+        secret: process.env.JWT_SECRET,
+        expiresIn: '5m',
+      });
+      return {
+        status: 'success',
+        requiresTwoFactor: true,
+        tempToken,
+      };
+    }
+
+    return this.generateAuthResponse(user);
+  }
+
+  private async generateAuthResponse(user: any) {
     const payload = {
       sub: user.id,
       email: user.email,
@@ -294,6 +318,92 @@ export class AuthService {
       access_token: accessToken,
       refresh_token: refreshToken,
     };
+  }
+
+  // =========================
+  // TWO FACTOR AUTH (2FA)
+  // =========================
+  async generateTwoFactorSecret(userId: string, email: string) {
+    const secret = authenticator.generateSecret();
+    const otpauthUrl = authenticator.keyuri(email, 'BankSystem', secret);
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { twoFactorSecret: secret },
+    });
+
+    const qrCodeDataUrl = await qrcode.toDataURL(otpauthUrl);
+    return { secret, qrCodeDataUrl };
+  }
+
+  async turnOnTwoFactorAuthentication(userId: string, code: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user || !user.twoFactorSecret) {
+      throw new UnauthorizedException('2FA secret not generated');
+    }
+
+    const cleanCode = code.toString().replace(/\s/g, '');
+    console.log('--- 2FA TURN ON DEBUG ---');
+    console.log('Incoming Code:', code);
+    console.log('Clean Code:', cleanCode);
+    console.log('Secret:', user.twoFactorSecret);
+    const isCodeValid = authenticator.verify({ token: cleanCode, secret: user.twoFactorSecret });
+    console.log('Is Valid:', isCodeValid);
+    if (!isCodeValid) throw new BadRequestException('Invalid authentication code');
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { isTwoFactorEnabled: true },
+    });
+
+    return { status: 'success', message: '2FA enabled successfully' };
+  }
+
+  async turnOffTwoFactorAuthentication(userId: string, code: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user || !user.isTwoFactorEnabled || !user.twoFactorSecret) {
+      return { status: 'success', message: '2FA is already disabled' };
+    }
+
+    const isCodeValid = authenticator.verify({ token: code, secret: user.twoFactorSecret });
+    if (!isCodeValid) throw new BadRequestException('Invalid authentication code');
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { isTwoFactorEnabled: false, twoFactorSecret: null },
+    });
+
+    return { status: 'success', message: '2FA disabled successfully' };
+  }
+
+  async verifyTwoFactorLogin(tempToken: string, code: string) {
+    try {
+      const decoded = await this.jwtService.verifyAsync(tempToken, { secret: process.env.JWT_SECRET });
+      if (!decoded.isTwoFactorPending) throw new UnauthorizedException('Invalid temp token');
+
+      const user = await this.prisma.user.findUnique({
+        where: { id: decoded.sub },
+        select: {
+          id: true, email: true, role: true, firstName: true, lastName: true, avatar: true, status: true, twoFactorSecret: true, isTwoFactorEnabled: true
+        }
+      });
+
+      if (!user || user.status === 'FROZEN') throw new UnauthorizedException('Account disabled');
+      if (!user.isTwoFactorEnabled || !user.twoFactorSecret) throw new UnauthorizedException('2FA is not enabled');
+
+      const cleanCode = code.toString().replace(/\s/g, '');
+    console.log('--- 2FA DEBUG ---');
+    console.log('Incoming Code:', code);
+    console.log('Clean Code:', cleanCode);
+    console.log('Secret Length:', user.twoFactorSecret?.length);
+    const isCodeValid = authenticator.verify({ token: cleanCode, secret: user.twoFactorSecret });
+    console.log('Is Valid:', isCodeValid);
+      if (!isCodeValid) throw new BadRequestException('Invalid authentication code');
+
+      return this.generateAuthResponse(user);
+    } catch (e) {
+      throw new UnauthorizedException('Invalid or expired token/code');
+    }
   }
 
   // =========================
