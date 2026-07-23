@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../services/api';
 import { useTranslation } from 'react-i18next';
+import { formatCurrency } from '../utils/format';
 
 const transferSchema = z.object({
   recipient: z.string().min(3, 'Recipient name or ID must be valid'),
@@ -129,7 +130,10 @@ export function Transfer() {
       <ConfirmModal
         isOpen={confirmModal.isOpen}
         title={t('transfer.confirmModalTitle')}
-        message={t('transfer.confirmModalMessage', { amount: confirmModal.data?.amount, recipient: confirmModal.data?.recipient })}
+        message={t('transfer.confirmModalMessage', { 
+          amount: confirmModal.data ? formatCurrency(Number(confirmModal.data.amount), confirmModal.sourceAccount?.currency || 'USD') : '', 
+          recipient: confirmModal.data?.recipient 
+        })}
         onConfirm={executeTransfer}
         onCancel={() => setConfirmModal({ isOpen: false })}
       />

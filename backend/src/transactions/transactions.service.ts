@@ -18,6 +18,7 @@ export class TransactionsService {
       },
       orderBy: { createdAt: 'desc' },
       take: 50,
+      include: { account: true }
     });
   }
 
@@ -32,6 +33,7 @@ export class TransactionsService {
       });
 
       if (!fromAccount) throw new NotFoundException('Source account not found');
+      if (fromAccount.status === 'CLOSED') throw new BadRequestException('Source account is closed');
       if (fromAccount.balance < amount) throw new BadRequestException('Insufficient funds');
 
       // 2. Get receiver account
@@ -40,6 +42,10 @@ export class TransactionsService {
       });
 
       if (!toAccount) throw new NotFoundException('Destination account not found');
+      if (toAccount.status === 'CLOSED') throw new BadRequestException('Destination account is closed');
+      if (fromAccount.currency !== toAccount.currency) {
+        throw new BadRequestException('Cannot transfer between accounts with different currencies');
+      }
 
       // 3. Deduct from sender
       await prisma.account.update({
@@ -76,13 +82,13 @@ export class TransactionsService {
         },
       });
 
-      return { withdrawal, toUserId: toAccount.userId, fromAccountNumber: fromAccount.accountNumber };
+      return { withdrawal, toUserId: toAccount.userId, fromAccountNumber: fromAccount.accountNumber, currency: toAccount.currency };
     });
 
     this.notificationsService.createAndSend(
       result.toUserId,
       'Incoming Transfer',
-      `You received $${amount} from ${result.fromAccountNumber}`
+      `You received ${result.currency} ${amount} from ${result.fromAccountNumber}`
     );
 
     return result.withdrawal;

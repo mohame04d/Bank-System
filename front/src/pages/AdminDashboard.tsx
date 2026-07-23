@@ -236,7 +236,7 @@ export function AdminDashboard() {
                       {tx.account?.user?.email || 'System'}
                     </td>
                     <td className="px-4 py-3 font-medium text-slate-200">
-                      {formatCurrency(tx.amount)}
+                      {formatCurrency(tx.amount, tx.account?.currency || 'USD')}
                     </td>
                     <td className="px-4 py-3 text-xs">
                       {formatDate(tx.createdAt)}

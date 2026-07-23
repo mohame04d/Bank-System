@@ -10,6 +10,8 @@ import { StripeModule } from './stripe/stripe.module';
 import { EmailModule } from './emails/email.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { CardsModule } from './cards/cards.module';
+import { SavingsGoalsModule } from './savings-goals/savings-goals.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -24,6 +26,8 @@ import { CardsModule } from './cards/cards.module';
     EmailModule,
     NotificationsModule,
     CardsModule,
+    SavingsGoalsModule,
+    ScheduleModule.forRoot(),
   ],
 })
 export class AppModule {}

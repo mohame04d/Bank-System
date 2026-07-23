@@ -22,7 +22,11 @@ export const AdminRoute = () => {
 
   const role = getRole();
 
-  if (!token || role !== 'ADMIN') {
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (role !== 'ADMIN') {
     return <Navigate to="/dashboard" replace />;
   }
 

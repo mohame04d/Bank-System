@@ -40,9 +40,9 @@
   },
   "notifications": {
     "DepositSuccessful": "Deposit Successful",
-    "DepositSuccessfulMessage": "An amount of ${{amount}} has been added to your account.",
+    "DepositSuccessfulMessage": "An amount of {{amount}} has been added to your account.",
     "IncomingTransfer": "Incoming Transfer",
-    "IncomingTransferMessage": "You received ${{amount}} from {{from}}"
+    "IncomingTransferMessage": "You received {{amount}} from {{from}}"
   },
   "transfer": {
     "title": "Transfer Money",
@@ -55,32 +55,32 @@
     "recipientPlaceholder": "John Doe",
     "accountNumber": "Account Number",
     "accountPlaceholder": "0000 0000 0000",
-    "amount": "Amount (USD)",
+    "amount": "Amount",
     "amountPlaceholder": "0.00",
     "notes": "Transfer Notes (Optional)",
     "notesPlaceholder": "e.g. Rent payment",
     "confirmTransfer": "Confirm Transfer",
     "noAccountError": "No account found to transfer from.",
-    "successMessage": "Successfully transferred ${{amount}} to {{recipient}}",
+    "successMessage": "Successfully transferred {{amount}} to {{recipient}}",
     "accountDeleted": "This account no longer exists and has been removed from your quick select list.",
     "failedMessage": "Failed to transfer money",
     "confirmModalTitle": "Confirm Transfer",
-    "confirmModalMessage": "Are you sure you want to transfer ${{amount}} to {{recipient}}?"
+    "confirmModalMessage": "Are you sure you want to transfer {{amount}} to {{recipient}}?"
   },
   "deposit": {
     "title": "Deposit Funds",
     "subtitle": "Add money to your account using a credit or debit card.",
-    "amount": "Amount (USD)",
+    "amount": "Amount",
     "amountPlaceholder": "0.00",
     "cardDetails": "Card Details",
-    "quick100": "Quick $100",
+    "quick100": "Quick 100",
     "copyTestCard": "Copy Test Card",
     "copied": "Copied!",
     "processing": "Processing...",
     "depositNow": "Deposit Now",
     "confirmModalTitle": "Confirm Deposit",
-    "confirmModalMessage": "Are you sure you want to deposit ${{amount}}?",
-    "successMessage": "Successfully deposited ${{amount}}!",
+    "confirmModalMessage": "Are you sure you want to deposit {{amount}}?",
+    "successMessage": "Successfully deposited {{amount}}!",
     "failedMessage": "An error occurred during payment",
     "testMode": "(Local Test Mode)"
   },

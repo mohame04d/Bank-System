@@ -73,6 +73,8 @@ model Account {
   user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactions  Transaction[] @relation("AccountTransactions")
   cards         Card[]        @relation("AccountCards")
+  savingsGoals  SavingsGoal[]
+  status        AccountStatus @default(ACTIVE)
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 }
@@ -132,4 +134,49 @@ model Notification {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
+}
+
+model SavingsGoal {
+  id              String   @id @default(uuid())
+  name            String
+  targetAmount    Float
+  currentAmount   Float    @default(0.0)
+  targetDate      DateTime?
+  
+  autoSaveAmount  Float?
+  autoSaveFrequency AutoSaveFrequency?
+  sourceAccountId String?
+  
+  isLocked        Boolean  @default(false)
+  lockedUntil     DateTime?
+  
+  milestone25Sent Boolean @default(false)
+  milestone50Sent Boolean @default(false)
+  milestone75Sent Boolean @default(false)
+  milestone100Sent Boolean @default(false)
+
+  accountId       String
+  account         Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  status          GoalStatus @default(ACTIVE)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+enum AutoSaveFrequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum AccountStatus {
+  ACTIVE
+  CLOSED
+}
+
+enum GoalStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+  ARCHIVED
 }

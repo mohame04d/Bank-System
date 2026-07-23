@@ -40,9 +40,9 @@
   },
   "notifications": {
     "DepositSuccessful": "تم الإيداع بنجاح",
-    "DepositSuccessfulMessage": "تم إضافة مبلغ ${{amount}} إلى حسابك بنجاح.",
+    "DepositSuccessfulMessage": "تم إضافة مبلغ {{amount}} إلى حسابك بنجاح.",
     "IncomingTransfer": "حوالة واردة",
-    "IncomingTransferMessage": "لقد استلمت مبلغ ${{amount}} من الحساب {{from}}"
+    "IncomingTransferMessage": "لقد استلمت مبلغ {{amount}} من الحساب {{from}}"
   },
   "transfer": {
     "title": "تحويل الأموال",
@@ -55,32 +55,32 @@
     "recipientPlaceholder": "فلان الفلاني",
     "accountNumber": "رقم الحساب",
     "accountPlaceholder": "0000 0000 0000",
-    "amount": "المبلغ (دولار)",
+    "amount": "المبلغ",
     "amountPlaceholder": "0.00",
     "notes": "ملاحظات التحويل (اختياري)",
     "notesPlaceholder": "مثال: دفع الإيجار",
     "confirmTransfer": "تأكيد التحويل",
     "noAccountError": "لا يوجد حساب للتحويل منه.",
-    "successMessage": "تم تحويل {{amount}}$ بنجاح إلى {{recipient}}",
+    "successMessage": "تم تحويل {{amount}} بنجاح إلى {{recipient}}",
     "accountDeleted": "هذا الحساب لم يعد موجوداً وتمت إزالته من قائمة الاختيار السريع.",
     "failedMessage": "فشل في تحويل الأموال",
     "confirmModalTitle": "تأكيد التحويل",
-    "confirmModalMessage": "هل أنت متأكد أنك تريد تحويل {{amount}}$ إلى {{recipient}}؟"
+    "confirmModalMessage": "هل أنت متأكد أنك تريد تحويل {{amount}} إلى {{recipient}}؟"
   },
   "deposit": {
     "title": "إيداع الأموال",
     "subtitle": "أضف أموالاً إلى حسابك باستخدام بطاقة الائتمان أو الخصم.",
-    "amount": "المبلغ (دولار)",
+    "amount": "المبلغ",
     "amountPlaceholder": "0.00",
     "cardDetails": "تفاصيل البطاقة",
-    "quick100": "100$ سريعة",
+    "quick100": "100 سريعة",
     "copyTestCard": "نسخ بطاقة الاختبار",
     "copied": "تم النسخ!",
     "processing": "جاري المعالجة...",
     "depositNow": "إيداع الآن",
     "confirmModalTitle": "تأكيد الإيداع",
-    "confirmModalMessage": "هل أنت متأكد أنك تريد إيداع {{amount}}$؟",
-    "successMessage": "تم إيداع {{amount}}$ بنجاح!",
+    "confirmModalMessage": "هل أنت متأكد أنك تريد إيداع {{amount}}؟",
+    "successMessage": "تم إيداع {{amount}} بنجاح!",
     "failedMessage": "حدث خطأ أثناء الدفع",
     "testMode": "(وضع الاختبار المحلي)"
   },

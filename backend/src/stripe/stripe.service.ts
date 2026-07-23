@@ -16,13 +16,18 @@ export class StripeService {
     });
   }
 
-  async createPaymentIntent(userId: string, amount: number) {
+  async createPaymentIntent(userId: string, amount: number, accountId?: string) {
     if (amount <= 0) throw new BadRequestException('Amount must be positive');
 
-    // Assuming we want to deposit to their CHECKING account
-    const account = await this.prisma.account.findFirst({
-      where: { userId, type: 'CHECKING' },
-    });
+    let account;
+    if (accountId) {
+      account = await this.prisma.account.findUnique({ where: { id: accountId } });
+      if (account?.userId !== userId) throw new BadRequestException('Invalid account');
+    } else {
+      account = await this.prisma.account.findFirst({
+        where: { userId, type: 'CHECKING' },
+      });
+    }
 
     if (!account) throw new BadRequestException('No eligible account found for deposit');
 

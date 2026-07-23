@@ -103,7 +103,7 @@ export function Dashboard() {
         amount: amountNum,
         description: `Transfer to ${selectedContact}`,
       });
-      toast.success(`Successfully sent $${quickAmount} to ${selectedContact}`);
+      toast.success(`Successfully sent ${formatCurrency(amountNum, sourceAccount.currency)} to ${selectedContact}`);
       setQuickAmount('');
       setSelectedContact(null);
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
@@ -144,7 +144,7 @@ export function Dashboard() {
             <div>
               <p className="text-blue-100 font-medium mb-1">{t('dashboard.totalBalance')}</p>
               <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight">
-                {accountsLoading ? '...' : formatCurrency(totalBalance)}
+                {accountsLoading ? '...' : formatCurrency(totalBalance, accounts?.[0]?.currency || 'USD')}
               </h2>
             </div>
             
@@ -153,13 +153,13 @@ export function Dashboard() {
                 <p className="text-blue-200 text-sm mb-1 flex items-center gap-1">
                   <ArrowDownRight size={16} className="text-emerald-400" /> {t('dashboard.income')}
                 </p>
-                <p className="text-xl font-semibold text-white">{formatCurrency(totalIncome)}</p>
+                <p className="text-xl font-semibold text-white">{formatCurrency(totalIncome, accounts?.[0]?.currency || 'USD')}</p>
               </div>
               <div>
                 <p className="text-blue-200 text-sm mb-1 flex items-center gap-1">
                   <ArrowUpRight size={16} className="text-rose-400" /> {t('dashboard.expense')}
                 </p>
-                <p className="text-xl font-semibold text-white">{formatCurrency(totalExpense)}</p>
+                <p className="text-xl font-semibold text-white">{formatCurrency(totalExpense, accounts?.[0]?.currency || 'USD')}</p>
               </div>
             </div>
           </div>
@@ -222,7 +222,7 @@ export function Dashboard() {
                       </div>
                     </div>
                     <div className={`font-semibold ${isIncoming ? 'text-emerald-400' : 'text-slate-200'}`}>
-                      {isIncoming ? '+' : '-'}{formatCurrency(Math.abs(tx.amount))}
+                      {isIncoming ? '+' : '-'}{formatCurrency(Math.abs(tx.amount), tx.account?.currency || 'USD')}
                     </div>
                   </div>
                 );

@@ -19,7 +19,24 @@ export class AccountsController {
   }
 
   @Post()
-  async createAccount(@Body('type') type: AccountType, @Req() req: any) {
-    return this.accountsService.createSubAccount(req.user.userId, type || AccountType.SAVINGS);
+  async createAccount(
+    @Body('type') type: AccountType,
+    @Body('currency') currency: string,
+    @Req() req: any
+  ) {
+    return this.accountsService.createSubAccount(
+      req.user.userId,
+      type || AccountType.SAVINGS,
+      currency || 'USD'
+    );
+  }
+
+  @Post(':id/close')
+  async closeAccount(
+    @Param('id') id: string,
+    @Body('transferToAccountId') transferToAccountId: string,
+    @Req() req: any
+  ) {
+    return this.accountsService.closeAccount(id, req.user.userId, transferToAccountId);
   }
 }

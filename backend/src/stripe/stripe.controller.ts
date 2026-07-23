@@ -10,8 +10,8 @@ export class StripeController {
 
   @UseGuards(JwtAuthGuard)
   @Post('create-payment-intent')
-  async createPaymentIntent(@Req() req: any, @Body('amount') amount: number) {
-    return this.stripeService.createPaymentIntent(req.user.userId, amount);
+  async createPaymentIntent(@Req() req: any, @Body('amount') amount: number, @Body('accountId') accountId?: string) {
+    return this.stripeService.createPaymentIntent(req.user.userId, amount, accountId);
   }
 
   @Post('webhook')
@@ -21,15 +21,25 @@ export class StripeController {
 
   @UseGuards(JwtAuthGuard)
   @Post('confirm-test-deposit')
-  async confirmTestDeposit(@Req() req: any, @Body('amount') amount: number) {
-    // Only allow this endpoint in local testing without a real webhook
-    if (process.env.STRIPE_WEBHOOK_SECRET !== 'whsec_placeholder') {
+  async confirmTestDeposit(@Req() req: any, @Body('amount') amount: number, @Body('accountId') accountId?: string) {
+    // Only allow this endpoint in local testing
+    if (process.env.NODE_ENV === 'production') {
       return { success: false, message: 'Not allowed in production' };
     }
     
-    const account = await this.stripeService['prisma'].account.findFirst({
-      where: { userId: req.user.userId, type: 'CHECKING' },
-    });
+    let account;
+    if (accountId) {
+      account = await this.stripeService['prisma'].account.findUnique({
+        where: { id: accountId },
+      });
+      if (account?.userId !== req.user.userId) {
+         account = null;
+      }
+    } else {
+      account = await this.stripeService['prisma'].account.findFirst({
+        where: { userId: req.user.userId, type: 'CHECKING' },
+      });
+    }
     
     if (account) {
       await this.stripeService['prisma'].$transaction(async (prisma: any) => {

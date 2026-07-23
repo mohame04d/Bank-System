@@ -38,7 +38,7 @@ export function Register() {
     try {
       const [firstName, ...lastNameParts] = data.name.trim().split(' ');
       const lastName = lastNameParts.join(' ') || 'Unknown';
-      
+
       const payload = {
         email: data.email,
         password: data.password,
@@ -47,7 +47,7 @@ export function Register() {
       };
 
       await api.post('/auth/sign-up', payload);
-      
+
       toast.success('Account created! Please check your email for the verification code.');
       navigate('/verify-signup', { state: { email: data.email } });
     } catch (error: any) {
@@ -64,7 +64,7 @@ export function Register() {
         {/* Decorative elements */}
         <div className="absolute -top-24 -left-24 w-48 h-48 bg-primary/20 rounded-full blur-3xl"></div>
         <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-emerald-500/20 rounded-full blur-3xl"></div>
-        
+
         <div className="relative z-10 flex flex-col items-center mb-8">
           <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-white mb-4 shadow-lg shadow-primary/20">
             <Wallet size={24} />

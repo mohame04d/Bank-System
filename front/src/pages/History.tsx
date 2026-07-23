@@ -136,7 +136,7 @@ export function History() {
                       <td className={`p-4 rtl:text-left ltr:text-right font-semibold ${
                         isIncoming ? 'text-emerald-400' : 'text-slate-200'
                       }`}>
-                        {isIncoming ? '+' : '-'}{formatCurrency(Math.abs(tx.amount))}
+                        {isIncoming ? '+' : '-'}{formatCurrency(Math.abs(tx.amount), tx.account?.currency || 'USD')}
                       </td>
                     </tr>
                   );
