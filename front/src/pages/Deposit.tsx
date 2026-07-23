@@ -57,6 +57,7 @@ const CheckoutForm = () => {
   };
 
   const executeDeposit = async () => {
+    if (!stripe || !elements) return;
     setIsLoading(true);
     const depositAmount = confirmModal.amount!;
     setConfirmModal({ isOpen: false });

@@ -124,12 +124,12 @@ export function Header({ onMenuClick }: { onMenuClick: () => void }) {
                     >
                       <div className="flex justify-between items-start gap-2">
                         <h4 className={`text-sm ${!notif.isRead ? 'font-semibold text-slate-200' : 'text-slate-300'}`}>
-                          {t(`notifications.${notif.title.replace(/\s+/g, '')}`, notif.title)}
+                          {t(`notifications.${notif.title.replace(/\s+/g, '')}`, notif.title) as any}
                         </h4>
                         {!notif.isRead && <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0 mt-1" />}
                       </div>
                       <p className="text-xs text-slate-400 mt-1 line-clamp-2">
-                         {t(`notifications.${notif.title.replace(/\s+/g, '')}Message`, notif.message, { amount: notif.message.match(/\$(\d+(\.\d+)?)/)?.[1] || '', from: notif.message.split('from ')[1] || '' })}
+                         {t(`notifications.${notif.title.replace(/\s+/g, '')}Message`, notif.message, { amount: notif.message.match(/\$(\d+(\.\d+)?)/)?.[1] || '', from: notif.message.split('from ')[1] || '' }) as any}
                       </p>
                       <p className="text-[10px] text-slate-500 mt-2">
                         {new Date(notif.createdAt).toLocaleDateString()} {new Date(notif.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}

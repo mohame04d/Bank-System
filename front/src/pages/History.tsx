@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import api from '../services/api';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 
 export function History() {
   const [searchParams, setSearchParams] = useSearchParams();
