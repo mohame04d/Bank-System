@@ -1,13 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { NotificationsGateway } from './notifications.gateway';
 
 @Injectable()
 export class NotificationsService {
-  constructor(
-    private prisma: PrismaService,
-    private notificationsGateway: NotificationsGateway
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
   async createAndSend(userId: string, title: string, message: string) {
     // Save to database
@@ -18,9 +14,6 @@ export class NotificationsService {
         message,
       },
     });
-
-    // Emit real-time socket event
-    this.notificationsGateway.sendNotificationToUser(userId, 'transaction_created', notification);
 
     return notification;
   }
