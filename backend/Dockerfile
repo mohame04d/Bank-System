@@ -13,7 +13,7 @@ RUN npm install
 COPY . .
 
 # Generate Prisma Client and Build the NestJS application
-RUN npx prisma generate
+RUN DATABASE_URL="postgresql://postgres:postgres@localhost:5432/db" npx prisma generate
 RUN npm run build
 
 # Expose the application port
