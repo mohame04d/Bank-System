@@ -20,9 +20,14 @@ export function ForgotPassword() {
 
     try {
       const response = await api.post('/auth/reset-password', { email });
-      toast.success(response.data.message || 'If an account exists, a verification code has been sent.');
+      const demoCode = response.data?.demoCode;
+      if (demoCode) {
+        toast.success(`Demo Mode: Your verification code is: ${demoCode}`, { duration: 10000 });
+      } else {
+        toast.success(response.data.message || 'If an account exists, a verification code has been sent.');
+      }
 
-      navigate('/verify-reset', { state: { email } });
+      navigate('/verify-reset', { state: { email, demoCode } });
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to request password reset');
     } finally {

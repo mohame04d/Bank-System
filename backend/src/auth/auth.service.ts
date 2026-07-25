@@ -51,6 +51,7 @@ export class AuthService {
     ]);
 
     const otpExpire = new Date(Date.now() + AUTH_CONSTANTS.OTP_EXPIRY_MS);
+    const initialAccountNumber = Math.floor(1000000000 + Math.random() * 9000000000).toString();
 
     const user = await this.prisma.user.create({
       data: {
@@ -62,6 +63,14 @@ export class AuthService {
         verificationCode: code,
         otpPurpose: 'SIGN_UP',
         otpExpire,
+        accounts: {
+          create: {
+            accountNumber: initialAccountNumber,
+            balance: 1000.0,
+            currency: 'EGP',
+            type: 'CHECKING',
+          },
+        },
       },
       select: {
         id: true,
@@ -72,15 +81,8 @@ export class AuthService {
       },
     });
 
-    await this.mailService.sendSignupCode(user.email, code).catch((err) => {
-      console.error('Failed to send signup code email:', err.message);
-    });
-
-    return {
-      status: 'success',
-      message: 'code send to email',
-      data: user,
-    };
+    // Skip email sending for sign up in demo/free mode as requested by user
+    return this.generateAuthResponse(user);
   }
 
   async resendSignupCode(dto: ResetPasswordDto) {

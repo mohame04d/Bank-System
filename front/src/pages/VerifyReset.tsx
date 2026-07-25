@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 export function VerifyReset() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [code, setCode] = useState('');
+  const [code, setCode] = useState(location.state?.demoCode || '');
   const [isLoading, setIsLoading] = useState(false);
   const { t } = useTranslation();
 
@@ -46,8 +46,14 @@ export function VerifyReset() {
 
   const handleResend = async () => {
     try {
-      await api.post('/auth/reset-password', { email });
-      toast.success('A new verification code has been sent.');
+      const response = await api.post('/auth/reset-password', { email });
+      const demoCode = response.data?.demoCode;
+      if (demoCode) {
+        toast.success(`Demo Mode: New code is: ${demoCode}`, { duration: 10000 });
+        setCode(demoCode);
+      } else {
+        toast.success('A new verification code has been sent.');
+      }
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to resend code');
     }

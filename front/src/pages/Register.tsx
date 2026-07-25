@@ -26,6 +26,7 @@ type RegisterForm = z.infer<typeof registerSchema>;
 
 export function Register() {
   const navigate = useNavigate();
+  const setAuth = useAuthStore((state) => state.setAuth);
   const [isLoading, setIsLoading] = useState(false);
   const { t } = useTranslation();
 
@@ -46,10 +47,22 @@ export function Register() {
         lastName,
       };
 
-      await api.post('/auth/sign-up', payload);
+      const response = await api.post('/auth/sign-up', payload);
 
-      toast.success('Account created! Please check your email for the verification code.');
-      navigate('/verify-signup', { state: { email: data.email } });
+      if (response.data?.access_token) {
+        const { access_token, refresh_token, data: userData } = response.data;
+        const name = `${userData?.firstName || ''} ${userData?.lastName || ''}`.trim() || userData?.name || userData?.email || '';
+        setAuth(
+          { id: userData?.id || '', name, email: userData?.email || '' },
+          access_token,
+          refresh_token
+        );
+        toast.success('Account created successfully! Welcome 🚀');
+        navigate('/dashboard');
+      } else {
+        toast.success('Account created successfully! Please sign in.');
+        navigate('/login');
+      }
     } catch (error: any) {
       console.error(error);
       toast.error(error.response?.data?.message || 'Failed to create account');
