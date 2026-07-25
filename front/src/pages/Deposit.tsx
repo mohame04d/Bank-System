@@ -86,13 +86,15 @@ const CheckoutForm = () => {
       if (result.error) {
         toast.error(result.error.message || t('deposit.failedMessage'));
       } else {
-        // In local development without webhook forwarding, we explicitly tell the backend it succeeded
-        try {
-          await api.post('/stripe/confirm-test-deposit', {
-             amount: Number(depositAmount),
-             accountId: selectedAccountId || undefined 
-          });
-        } catch(e) {}
+        // Explicitly confirm deposit with backend to update balance and history immediately in demo mode
+        const res = await api.post('/stripe/confirm-test-deposit', {
+           amount: Number(depositAmount),
+           accountId: selectedAccountId || undefined 
+        });
+        if (res.data && res.data.success === false) {
+           toast.error(res.data.message || t('deposit.failedMessage'));
+           return;
+        }
 
         toast.success(t('deposit.successMessage', { amount: depositAmount }));
         setAmount('');

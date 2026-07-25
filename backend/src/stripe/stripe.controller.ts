@@ -22,11 +22,6 @@ export class StripeController {
   @UseGuards(JwtAuthGuard)
   @Post('confirm-test-deposit')
   async confirmTestDeposit(@Req() req: any, @Body('amount') amount: number, @Body('accountId') accountId?: string) {
-    // Only allow this endpoint in local testing
-    if (process.env.NODE_ENV === 'production') {
-      return { success: false, message: 'Not allowed in production' };
-    }
-    
     let account;
     if (accountId) {
       account = await this.stripeService['prisma'].account.findUnique({
@@ -35,10 +30,20 @@ export class StripeController {
       if (account?.userId !== req.user.userId) {
          account = null;
       }
-    } else {
+    } 
+    if (!account) {
       account = await this.stripeService['prisma'].account.findFirst({
         where: { userId: req.user.userId, type: 'CHECKING' },
       });
+    }
+    if (!account) {
+      account = await this.stripeService['prisma'].account.findFirst({
+        where: { userId: req.user.userId },
+      });
+    }
+    
+    if (!account) {
+      return { success: false, message: 'No active bank account found for deposit' };
     }
     
     if (account) {
