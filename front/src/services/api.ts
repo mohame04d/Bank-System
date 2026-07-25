@@ -1,9 +1,26 @@
 import axios from 'axios';
 import { useAuthStore } from '../store/useAuthStore';
 
+// Foolproof URL resolver to guarantee cloud connectivity on mobile & desktop
+const getBaseUrl = () => {
+  let url = import.meta.env.VITE_API_URL;
+  if (!url) {
+    url = import.meta.env.PROD 
+      ? 'https://bank-backend-d28e4.containers.snapdeploy.app/api' 
+      : 'http://localhost:3000/api';
+  }
+  // Remove trailing slashes
+  url = url.replace(/\/+$/, '');
+  // Automatically append /api if missing
+  if (!url.endsWith('/api')) {
+    url += '/api';
+  }
+  return url;
+};
+
 // Create an Axios instance
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api', // Adjust according to your backend
+  baseURL: getBaseUrl(),
   headers: {
     'Content-Type': 'application/json',
   },
